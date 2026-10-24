@@ -27,23 +27,26 @@ data <- c(21.8, 40.8, 25.1, 34.6, 39.1, 37.8, 38.4, 36.0, 34.4, 30.1,
 
 # Calculate:
 
-# a) The mean
-mean(data) # 29.262
+# # a) The mean
+# mean(data) # 29.262
+#
+# # b) The median
+# median(data) # 28
+#
+# # c) Interquartile range (IQR)
+# iqr(data) # 9.6
+#
+# # d) Standard deviation
+# std_deviation(data) # 6.0644
+#
+# # e) Coefficient of variation
+# cv(data) # 0.2072
+#
+# # f) Skewness / Coefficient of asymmetry
+# f_skewness(data) # 0.5197
+#
+# # g) Kurtosis or coefficient of peakedness
+# kurtosis(data) # -0.8489
 
-# b) The median
-median(data) # 28
-
-# c) Interquartile range (IQR)
-iqr(data) # 9.6
-
-# d) Standard deviation
-std_deviation(data) # 6.0644
-
-# e) Coefficient of variation
-cv(data) # 0.2072
-
-# f) Skewness / Coefficient of asymmetry
-f_skewness(data) # 0.5197
-
-# g) Kurtosis or coefficient of peakedness
-kurtosis(data) # -0.8489
+# the real chad way to solve this:
+pipsa_vector_info(data)
