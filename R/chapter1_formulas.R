@@ -3,7 +3,9 @@
 
 #' Print
 #'
-#' Prints a number/series of numbers with the correct rounding to do the exam faster
+#' Prints a number/series of numbers with the
+#' correct rounding to do the exam faster
+#'
 #' @param x A number or series of numbers we want to print
 #' @param string A string to print before the number (default is empty)
 #' @param round The number of decimals to round to (default is 5)
