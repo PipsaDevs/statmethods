@@ -51,7 +51,7 @@ pipsa_quartile <- function(x, y) {
 }
 
 pipsa_decile <- function(x, y) {
-    return(pipsa_quantile(x, y/10))
+    return(pipsa_quantile(x, y / 10))
 }
 
 #' Absolute frequency
@@ -333,8 +333,8 @@ pipsa_kurtosis <- function(x) {
 #' detect_outliers(c(1, 2, 3, 4, 5, 100, 200))
 #' @export
 pipsa_detect_outliers <- function(x) {
-  q1 <- quantile(x, 0.25)
-  q3 <- quantile(x, 0.75)
+  q1 <- pipsa_quantile(x, 0.25)
+  q3 <- pipsa_quantile(x, 0.75)
   iqr <- q3 - q1
 
   mod_lower <- q1 - 1.5 * iqr
