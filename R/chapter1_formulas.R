@@ -1,4 +1,58 @@
-# Basic stuff
+# ========================================================================
+# GENERAL FUNCTIONS (shared by most files)
+
+#' Print
+#'
+#' Prints a number/series of numbers with the correct rounding to do the exam faster
+#' @param x A number or series of numbers we want to print
+#' @param string A string to print before the number (default is empty)
+#' @param round The number of decimals to round to (default is 5)
+#' @return The number printed on the console with correct rounding
+#' @examples
+#' print(3.14159)
+#' @export
+pipsa_print <- function(x, string = "", round = 5) {
+    print(paste(string, round(x, round)))
+}
+
+# ========================================================================
+
+#' Hugo please add comments to these functions if you want or if not- idk man XDXDXD
+
+pipsa_quantile <- function(x, y) {
+    if (y > 1) {
+        y <- y / 100
+    }
+
+    return(quantile(x, y, type = 2))
+}
+
+pipsa_percentile <- function(x, y) {
+    # alias function
+    return(pipsa_quantile(x,y))
+}
+
+pipsa_quartile <- function(x, y) {
+    prob <- 0
+
+    if (y == 1) {
+        prob <- 0.25
+    } else if (y == 2) {
+        prob <- 0.5 # Also known as Me
+    } else if (y == 3) {
+        prob <- 0.75
+    } else if (y == 4) {
+        prob <- 1
+    } else {
+        print("That quartile value doesn't exist! Setting it to zero...")
+    }
+
+    return(pipsa_quantile(x, prob))
+}
+
+pipsa_decile <- function(x, y) {
+    return(pipsa_quantile(x, y / 10))
+}
 
 #' Absolute frequency
 #'
@@ -9,7 +63,7 @@
 #' @examples
 #' absolute_freq(c(1, 2, 2, 3, 3, 3, 4))
 #' @export
-absolute_freq <- function(x) table(x)
+pipsa_absolute_freq <- function(x) table(x)
 
 #' Statistical mode
 #'
@@ -20,8 +74,8 @@ absolute_freq <- function(x) table(x)
 #' @examples
 #' stat_mode(c(1, 2, 2, 3, 3, 4))
 #' @export
-stat_mode <- function(x) {
-  tbl <- absolute_freq(x)
+pipsa_stat_mode <- function(x) {
+  tbl <- pipsa_absolute_freq(x)
   as.numeric(names(tbl)[which.max(tbl)])
 }
 
@@ -34,10 +88,10 @@ stat_mode <- function(x) {
 #' @examples
 #' iqr(c(1, 2, 3, 4, 5))
 #' @export
-iqr <- function(x) {
+pipsa_iqr <- function(x) {
   q <- quantile(x, c(0.25, 0.75), type = 2)
   iqr <- q[2] - q[1]
-  print(paste("IQR:", round(iqr, 4)))
+  return(iqr)
 }
 
 #' Absolute frequency of a number
@@ -50,7 +104,7 @@ iqr <- function(x) {
 #' @examples
 #' absolute_freq_of_number(c(1, 2, 2, 3, 4), 2)
 #' @export
-absolute_freq_of_number <- function(x, y) {
+pipsa_absolute_freq_of_number <- function(x, y) {
   length(which(x == y))
 }
 
@@ -63,7 +117,7 @@ absolute_freq_of_number <- function(x, y) {
 #' @examples
 #' relative_freq(c(1, 2, 2, 3, 4))
 #' @export
-relative_freq <- function(x) prop.table(table(x))
+pipsa_relative_freq <- function(x) prop.table(table(x))
 
 #' Relative frequency of a specific number
 #'
@@ -76,7 +130,7 @@ relative_freq <- function(x) prop.table(table(x))
 #' @examples
 #' relative_freq_of_number(c(1, 2, 2, 3, 4), 2)
 #' @export
-relative_freq_of_number <- function(x, y) {
+pipsa_relative_freq_of_number <- function(x, y) {
   table <- prop.table(table(x))
   as.numeric(table)[which(names(table) == y)]
 }
@@ -90,7 +144,7 @@ relative_freq_of_number <- function(x, y) {
 #' @examples
 #' cum_absolute_freq(c(1, 2, 2, 3, 4))
 #' @export
-cum_absolute_freq <- function(x) cumsum(table(x))
+pipsa_cum_absolute_freq <- function(x) cumsum(table(x))
 
 #' Cumulative relative frequency
 #'
@@ -101,7 +155,7 @@ cum_absolute_freq <- function(x) cumsum(table(x))
 #' @examples
 #' cum_relative_freq(c(1, 2, 2, 3, 4))
 #' @export
-cum_relative_freq <- function(x) cumsum(prop.table(table(x)))
+pipsa_cum_relative_freq <- function(x) cumsum(prop.table(table(x)))
 
 # Position measures are all covered by R
 # Dispersion measures
@@ -118,7 +172,7 @@ cum_relative_freq <- function(x) cumsum(prop.table(table(x)))
 #' @examples
 #' mean_deviation(c(1, 2, 3, 4, 5))
 #' @export
-mean_deviation <- function(x, p = mean(x)) {
+pipsa_mean_deviation <- function(x, p = mean(x)) {
   mean(abs(x - p))
 }
 
@@ -134,7 +188,7 @@ mean_deviation <- function(x, p = mean(x)) {
 #' @examples
 #' mse(c(1, 2, 3, 4, 5))
 #' @export
-mse <- function(x, p = mean(x)) {
+pipsa_mse <- function(x, p = mean(x)) {
   mean((x - p)^2)
 }
 
@@ -147,7 +201,7 @@ mse <- function(x, p = mean(x)) {
 #' @examples
 #' variance(c(1, 2, 3, 4, 5))
 #' @export
-variance <- function(x) {
+pipsa_variance <- function(x) {
   mean((x - mean(x))^2)
 }
 
@@ -160,8 +214,8 @@ variance <- function(x) {
 #' @examples
 #' std_deviation(c(1, 2, 3, 4, 5))
 #' @export
-std_deviation <- function(x) {
-  sqrt(variance(x))
+pipsa_std_deviation <- function(x) {
+  sqrt(pipsa_variance(x))
 }
 
 #' Standardized variable
@@ -173,8 +227,8 @@ std_deviation <- function(x) {
 #' @examples
 #' std_variable(c(10, 20, 30, 40, 50))
 #' @export
-std_variable <- function(x) {
-  (x - mean(x)) / std_deviation(x)
+pipsa_std_variable <- function(x) {
+  (x - mean(x)) / pipsa_std_deviation(x)
 }
 
 #' Coefficient of variation
@@ -186,8 +240,8 @@ std_variable <- function(x) {
 #' @examples
 #' cv(c(10, 20, 30, 40, 50))
 #' @export
-cv <- function(x) {
-  std_deviation(x) / abs(mean(x))
+pipsa_cv <- function(x) {
+  pipsa_std_deviation(x) / abs(mean(x))
 }
 
 # Moments & Shape measures
@@ -204,7 +258,7 @@ cv <- function(x) {
 #' @examples
 #' moment(c(1, 2, 3, 4, 5), r = 2, c = 0)
 #' @export
-moment <- function(x, r, c) {
+pipsa_moment <- function(x, r, c) {
   mean((x - c)^r)
 }
 
@@ -218,7 +272,7 @@ moment <- function(x, r, c) {
 #' @examples
 #' ord_moment(c(1, 2, 3, 4, 5), r = 2)
 #' @export
-ord_moment <- function(x, r) moment(x, r, 0)
+pipsa_ord_moment <- function(x, r) pipsa_moment(x, r, 0)
 
 #' Central moment
 #'
@@ -231,7 +285,7 @@ ord_moment <- function(x, r) moment(x, r, 0)
 #' @examples
 #' cnt_moment(c(1, 2, 3, 4, 5), r = 2)
 #' @export
-cnt_moment <- function(x, r) moment(x, r, mean(x))
+pipsa_cnt_moment <- function(x, r) pipsa_moment(x, r, mean(x))
 
 #' Pearson's skewness coefficient
 #'
@@ -242,7 +296,7 @@ cnt_moment <- function(x, r) moment(x, r, mean(x))
 #' @examples
 #' p_skewness(c(1, 2, 2, 3, 4))
 #' @export
-p_skewness <- function(x) (mean(x) - stat_mode(x)) / std_deviation(x)
+pipsa_p_skewness <- function(x) (mean(x) - pipsa_stat_mode(x)) / pipsa_std_deviation(x)
 
 #' Fisher's skewness coefficient
 #'
@@ -253,8 +307,8 @@ p_skewness <- function(x) (mean(x) - stat_mode(x)) / std_deviation(x)
 #' @examples
 #' f_skewness(c(1, 2, 3, 4, 5))
 #' @export
-f_skewness <- function(x) {
-  cnt_moment(x, 3) / (std_deviation(x)^3)
+pipsa_f_skewness <- function(x) {
+  pipsa_cnt_moment(x, 3) / (pipsa_std_deviation(x)^3)
 }
 
 #' Fisher's kurtosis coefficient
@@ -266,8 +320,8 @@ f_skewness <- function(x) {
 #' @examples
 #' kurtosis(c(1, 2, 3, 4, 5))
 #' @export
-kurtosis <- function(x) {
-  g <- cnt_moment(x, 4) / (std_deviation(x)^4)
+pipsa_kurtosis <- function(x) {
+  g <- pipsa_cnt_moment(x, 4) / (pipsa_std_deviation(x)^4)
   g - 3
 }
 
@@ -278,9 +332,9 @@ kurtosis <- function(x) {
 #' @examples
 #' detect_outliers(c(1, 2, 3, 4, 5, 100, 200))
 #' @export
-detect_outliers <- function(x) {
-  q1 <- quantile(x, 0.25)
-  q3 <- quantile(x, 0.75)
+pipsa_detect_outliers <- function(x) {
+  q1 <- pipsa_quantile(x, 0.25)
+  q3 <- pipsa_quantile(x, 0.75)
   iqr <- q3 - q1
 
   mod_lower <- q1 - 1.5 * iqr
@@ -310,7 +364,7 @@ detect_outliers <- function(x) {
 #' rms(c(2, 0, 0, 4, 6, 9, 6, 7, 6, 6, 1))
 #' @export
 
-rms <- function(x) {
+pipsa_rms <- function(x) {
   sqrt(mean(x^2))
 }
 
@@ -328,7 +382,84 @@ rms <- function(x) {
 #' @param ai Interval width
 #'
 #' @export
+pipsa_quantile_continuous <- function(c, N, L, N_prev, ni, ai) {
+    L + ((c * N - N_prev) / ni) * ai
+}
 
-quantile_continuous <- function(c, N, L, N_prev, ni, ai) {
-  L + ((c * N - N_prev) / ni) * ai
+#' Generate vector from data and frequencies
+#'
+#' Generates a vector with given data and frequencies
+#' @param x Vector of values
+#' @param y Vector of frequencies
+#' @return A vector with each value of x repeating by its respective y frequencies
+#' @examples
+#' pipsa_generate_vector_with_frequencies(c(1,2,3), c(4,5,6))
+#' @export
+pipsa_generate_vector_with_frequencies <- function(x, n) {
+
+    res <- c()
+
+    index <- 1
+
+    for (i in 1:length(n)) {
+        for (j in 1:n[i]) {
+            res <- c(res, x[i])
+            index <- index + 1
+        }
+    }
+
+    return(res)
+
+}
+
+#' Vector info
+#'
+#' Prints a lot of useful information from an array to the screen (and also returns info)
+#'
+#' @param x A numeric vector
+#' @return A list with the mean, median, mode, iqr, variance, standard deviation, coefficient of variation, skewness, kurtosis, and outliers
+#' @examples
+#' vector_info(c(1, 2, 3, 4, 5))
+#' @export
+pipsa_vector_info <- function(x) {
+    outliers <- pipsa_detect_outliers(x)
+
+    pipsa_print(mean(x), "Mean: ")
+    pipsa_print(median(x), "Median: ")
+    pipsa_print(pipsa_stat_mode(x), "Mode: ")
+    pipsa_print(pipsa_iqr(x), "IQR: ")
+    pipsa_print(pipsa_variance(x), "Variance: ")
+    pipsa_print(pipsa_std_deviation(x), "Standard Deviation: ")
+    pipsa_print(pipsa_cv(x), "Coefficient of Variation: ")
+    pipsa_print(pipsa_f_skewness(x), "Skewness: ")
+    pipsa_print(pipsa_kurtosis(x), "Kurtosis: ")
+
+    print("Moderate Outlier Bounds:")
+    pipsa_print(outliers$moderate_bounds)
+
+    print("Extreme Outlier Bounds:")
+    pipsa_print(outliers$extreme_bounds)
+
+    if (length(outliers$moderate_outliers) > 0) {
+        print("Moderate outliers:")
+        pipsa_print(outliers$moderate_outliers)
+    }
+
+    if (length(outliers$extreme_outliers) > 0) {
+        print("Extreme outliers:")
+        pipsa_print(outliers$extreme_outliers)
+    }
+
+    return(list(
+        mean = mean(x),
+        median = median(x),
+        mode = pipsa_stat_mode(x),
+        iqr = pipsa_iqr(x),
+        variance = pipsa_variance(x),
+        std_deviation = pipsa_std_deviation(x),
+        cv = pipsa_cv(x),
+        skewness = pipsa_f_skewness(x),
+        kurtosis = pipsa_kurtosis(x),
+        outliers = outliers
+    ))
 }
