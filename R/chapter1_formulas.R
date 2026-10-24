@@ -1,4 +1,4 @@
-# ========================================================================0
+# ========================================================================
 # GENERAL FUNCTIONS (shared by most files)
 
 #' Print
@@ -15,6 +15,44 @@ pipsa_print <- function(x, string = "", round = 5) {
     print(paste(string, round(x, round)))
 }
 
+# ========================================================================
+
+#' Hugo please add comments to these functions if you want or if not- idk man XDXDXD
+
+pipsa_quantile <- function(x, y) {
+    if (y > 1) {
+        y <- y / 100
+    }
+
+    return(quantile(x, y, type = 2))
+}
+
+pipsa_percentile <- function(x, y) {
+    # alias function
+    return(pipsa_quantile(x,y))
+}
+
+pipsa_quartile <- function(x, y) {
+    prob <- 0
+
+    if (y == 1) {
+        prob <- 0.25
+    } else if (y == 2) {
+        prob <- 0.5 # Also known as Me
+    } else if (y == 3) {
+        prob <- 0.75
+    } else if (y == 4) {
+        prob <- 1
+    } else {
+        print("That quartile value doesn't exist! Setting it to zero...")
+    }
+
+    return(pipsa_quantile(x, prob))
+}
+
+pipsa_decile <- function(x, y) {
+    return(pipsa_quantile(x, y/10))
+}
 
 #' Absolute frequency
 #'
