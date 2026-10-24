@@ -14,18 +14,19 @@
 #' print(3.14159)
 #' @export
 pipsa_print <- function(x, string = "", round = 5) {
-    print(paste(string, round(x, round)))
+  print(paste(string, round(x, round)))
 }
 
 
 #' Absolute frequency
 #'
-#' Computes the absolute frequency table (counts) for a sample vector.
+#' Computes the absolute frequency table of a vector with straight raw values
 #'
 #' @param x A vector of values.
 #' @return A frequency table (`table` object) with counts of each unique value.
 #' @examples
-#' absolute_freq(c(1, 2, 2, 3, 3, 3, 4))
+#' res <- absolute_freq(c(1, 2, 2, 3, 3, 3, 4))
+#' res == c(1, 2, 3, 1) # TRUE
 #' @export
 pipsa_absolute_freq <- function(x) table(x)
 
