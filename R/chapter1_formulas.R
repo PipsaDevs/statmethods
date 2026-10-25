@@ -457,37 +457,40 @@ pipsa_generate_vector_with_frequencies <- function(x, n) {
 #' Prints a lot of useful information from an array to the screen (and also returns info)
 #'
 #' @param x A numeric vector
+#' @param print Boolean to determine whether or not to print info to the screen. Default is True
 #' @return A list with the mean, median, mode, iqr, variance, standard deviation, coefficient of variation, skewness, kurtosis, and outliers
 #' @examples
 #' vector_info(c(1, 2, 3, 4, 5))
 #' @export
-pipsa_vector_info <- function(x) {
+pipsa_vector_info <- function(x, print = TRUE) {
   outliers <- pipsa_detect_outliers(x)
 
-  pipsa_print(mean(x), "Mean: ")
-  pipsa_print(median(x), "Median: ")
-  pipsa_print(pipsa_stat_mode(x), "Mode: ")
-  pipsa_print(pipsa_iqr(x), "IQR: ")
-  pipsa_print(pipsa_variance(x), "Variance: ")
-  pipsa_print(pipsa_std_deviation(x), "Standard Deviation: ")
-  pipsa_print(pipsa_cv(x), "Coefficient of Variation: ")
-  pipsa_print(pipsa_f_skewness(x, TRUE), "Skewness: ")
-  pipsa_print(pipsa_kurtosis(x, TRUE), "Kurtosis: ")
+  if (print) {
+    pipsa_print(mean(x), "Mean: ")
+    pipsa_print(median(x), "Median: ")
+    pipsa_print(pipsa_stat_mode(x), "Mode: ")
+    pipsa_print(pipsa_iqr(x), "IQR: ")
+    pipsa_print(pipsa_variance(x), "Variance: ")
+    pipsa_print(pipsa_std_deviation(x), "Standard Deviation: ")
+    pipsa_print(pipsa_cv(x), "Coefficient of Variation: ")
+    pipsa_print(pipsa_f_skewness(x, TRUE), "Skewness: ")
+    pipsa_print(pipsa_kurtosis(x, TRUE), "Kurtosis: ")
 
-  print("Moderate Outlier Bounds:")
-  pipsa_print(outliers$moderate_bounds)
+    print("Moderate Outlier Bounds:")
+    pipsa_print(outliers$moderate_bounds)
 
-  print("Extreme Outlier Bounds:")
-  pipsa_print(outliers$extreme_bounds)
+    print("Extreme Outlier Bounds:")
+    pipsa_print(outliers$extreme_bounds)
 
-  if (length(outliers$moderate_outliers) > 0) {
-    print("Moderate outliers:")
-    pipsa_print(outliers$moderate_outliers)
-  }
+    if (length(outliers$moderate_outliers) > 0) {
+      print("Moderate outliers:")
+      pipsa_print(outliers$moderate_outliers)
+    }
 
-  if (length(outliers$extreme_outliers) > 0) {
-    print("Extreme outliers:")
-    pipsa_print(outliers$extreme_outliers)
+    if (length(outliers$extreme_outliers) > 0) {
+      print("Extreme outliers:")
+      pipsa_print(outliers$extreme_outliers)
+    }
   }
 
   return(list(
