@@ -157,7 +157,7 @@ pipsa_std_deviation <- function(x) {
 #' pipsa_linear_correlation(c(1, 2, 3, 4), c(2, 4, 6, 8))
 #' @export
 pipsa_linear_correlation <- function(x, y) {
-  pipsa_covariance(x, y) / (pipsa_std_deviation()(x) * pipsa_std_deviation(y))
+  pipsa_covariance(x, y) / (pipsa_std_deviation(x) * pipsa_std_deviation(y))
 }
 
 #' Conditional Distribution Table Generator
