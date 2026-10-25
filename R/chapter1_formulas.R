@@ -41,6 +41,7 @@ pipsa_quantile <- function(x, y) {
 #' Percentile
 #'
 #' Alias function of the quantile function
+#' @export
 pipsa_percentile <- function(x, y) {
   # alias function
   pipsa_quantile(x, y)
