@@ -38,11 +38,24 @@ pipsa_quantile <- function(x, y) {
   quantile(x, y, type = 2)
 }
 
+#' Percentile
+#'
+#' Alias function of the quantile function
 pipsa_percentile <- function(x, y) {
   # alias function
   pipsa_quantile(x, y)
 }
 
+#' Quartile
+#'
+#' Calculates the quartile of a numeric vector
+#'
+#' @param x The vector with raw numeric values
+#' @param y The desired quartile in 1:4
+#' @return The quartile y of x
+#' @example
+#' pipsa_quartile(c(1, 1, 2, 5, -54, 9, 67), 1)
+#' @export
 pipsa_quartile <- function(x, y) {
   prob <- 0
 
