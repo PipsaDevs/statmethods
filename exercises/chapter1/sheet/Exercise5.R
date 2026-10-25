@@ -6,6 +6,6 @@
 
 source("R/chapter1_formulas.R")
 
-freq_distribution <- pipsa_freq_distribution(c(0, 10, 50, 100), c(3.22, 1.34, 0.41))
+freq_distribution <- pipsa_freq_distribution_from_histogram(c(0, 10, 50, 100), c(3.22, 1.34, 0.41))
 
 print(freq_distribution)
