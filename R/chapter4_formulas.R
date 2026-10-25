@@ -19,7 +19,7 @@ pipsa_combination <- function(x, y) {
 #'
 #' @param x An array
 #' @param y An array
-#' @return The percentage
+#' @return The conditional probability in decimal format
 #' @examples
 #' pipsa_conditional_probability(c(0.1, 0.2, 0.3), c(0.01, 0.02, 0.03))
 #' @export
