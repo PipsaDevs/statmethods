@@ -13,8 +13,17 @@
 #' @examples
 #' pipsa_print(3.14159)
 #' @export
-pipsa_print <- function(x, string = "", round = 5) {
-  print(paste(string, round(x, round)))
+pipsa_print <- function(x, string = "", round = 5, reverse = FALSE) {
+  if (length(x) > 1) {
+    print(string)
+    print(round(x, round))
+  } else {
+    if (reverse == TRUE) {
+      print(paste(round(x, round), string))
+    } else {
+      print(paste(string, round(x, round)))
+    }
+  }
 }
 
 # ========================================================================
@@ -59,8 +68,8 @@ pipsa_percentile <- function(x, y) {
 #' @export
 pipsa_quartile <- function(x, y) {
   if (!y %in% 1:4) {
-    print("Invalid y value")
-    stop()
+    print("That quartile value doesn't exist! Setting it to zero...")
+    y <- 0
   }
   y <- y / 4
   pipsa_quantile(x, y)
@@ -319,14 +328,25 @@ pipsa_cnt_moment <- function(x, r) pipsa_moment(x, r, mean(x))
 #' Computes Pearson's mode skewness coefficient: (mean - mode) / std_deviation.
 #'
 #' @param x A numeric vector.
+#' @param interpretation Set to FALSE by default,
+#' set to TRUE if you want the interpretation of the value
+#' you want to print the type of skewness
 #' @return The Pearson skewness coefficient.
 #' @examples
 #' pipsa_p_skewness(c(1, 2, 2, 3, 4))
 #' @export
-pipsa_p_skewness <- function(x) {
-  (
-    mean(x) - pipsa_stat_mode(x)
-  ) / pipsa_std_deviation(x)
+pipsa_p_skewness <- function(x, interpretation) {
+  skewness <- (mean(x) - pipsa_stat_mode(x)) / pipsa_std_deviation(x)
+
+  if (interpretation == TRUE) {
+    if (skewness > 0) {
+      pipsa_print(skewness, "> 0, RIGHT / POSITIVE SKEW", 5, TRUE)
+    } else if (skewness == 0) {
+      pipsa_print(skewness, "= 0, SYMMETRIC", 5, TRUE)
+    } else {
+      pipsa_print(skewness, "< 0, LEFT / NEGATIVE SKEW", 5, TRUE)
+    }
+  }
 }
 
 #' Fisher's skewness coefficient
@@ -334,12 +354,25 @@ pipsa_p_skewness <- function(x) {
 #' Computes Fisher's skewness coefficient: m_3 / (std_dev^3).
 #'
 #' @param x A numeric vector.
+#' @param interpretation Set to FALSE by default,
+#' set to TRUE if you want the interpretation of the value
 #' @return The Fisher skewness coefficient.
 #' @examples
 #' pipsa_f_skewness(c(1, 2, 3, 4, 5))
 #' @export
-pipsa_f_skewness <- function(x) {
-  pipsa_cnt_moment(x, 3) / (pipsa_std_deviation(x)^3)
+pipsa_f_skewness <- function(x, interpretation = FALSE) {
+  skewness <- pipsa_cnt_moment(x, 3) / (pipsa_std_deviation(x)^3)
+
+  if (interpretation == TRUE) {
+    if (skewness > 0) {
+      pipsa_print(skewness, "> 0, RIGHT / POSITIVE SKEW", 5, TRUE)
+    } else if (skewness == 0) {
+      pipsa_print(skewness, "= 0, SYMMETRIC", 5, TRUE)
+    } else {
+      pipsa_print(skewness, "< 0, LEFT / NEGATIVE SKEW", 5, TRUE)
+    }
+  }
+  skewness
 }
 
 #' Fisher's kurtosis coefficient
@@ -351,9 +384,18 @@ pipsa_f_skewness <- function(x) {
 #' @examples
 #' pipsa_kurtosis(c(1, 2, 3, 4, 5))
 #' @export
-pipsa_kurtosis <- function(x) {
-  g <- pipsa_cnt_moment(x, 4) / (pipsa_std_deviation(x)^4)
-  g - 3
+pipsa_kurtosis <- function(x, interpretation = FALSE) {
+  g <- (pipsa_cnt_moment(x, 4) / (pipsa_std_deviation(x)^4)) - 3
+  if (interpretation == TRUE) {
+    if (g > 0) {
+      pipsa_print(g, "> 0, LEPTOKURTIC / MORE PEAKED THAN NORMAL", 5, TRUE)
+    } else if (g == 0) {
+      pipsa_print(g, "= 0, MESOKURTIC / SAME PEAKEDNESS AS THE NORMAL", 5, TRUE)
+    } else {
+      pipsa_print(g, "< 0, PLATYKURTIC / LESS PEAKED THAN NORMAL", 5, TRUE)
+    }
+  }
+  g
 }
 
 #' Detect Moderate and Extreme Outliers using Interquartile Range
@@ -439,7 +481,7 @@ pipsa_generate_vector_with_frequencies <- function(x, n) {
     }
   }
 
-  res
+  return(res)
 }
 
 #' Vector info
@@ -464,8 +506,8 @@ pipsa_vector_info <- function(x) {
   pipsa_print(pipsa_variance(x), "Variance: ")
   pipsa_print(pipsa_std_deviation(x), "Standard Deviation: ")
   pipsa_print(pipsa_cv(x), "Coefficient of Variation: ")
-  pipsa_print(pipsa_f_skewness(x), "Skewness: ")
-  pipsa_print(pipsa_kurtosis(x), "Kurtosis: ")
+  pipsa_print(pipsa_f_skewness(x, TRUE), "Skewness: ")
+  pipsa_print(pipsa_kurtosis(x, TRUE), "Kurtosis: ")
 
   print("Moderate Outlier Bounds:")
   pipsa_print(outliers$moderate_bounds)
