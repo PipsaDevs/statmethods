@@ -38,7 +38,7 @@ pipsa_table_from_variables <- function(x, y) {
 #' @examples
 #' pipsa_table_from_variables(c(1, 1, 2, 2), c("A", "B", "A", "B"))
 #' @export
-pipsa_freq_distribution() <- function(x, y) {
+pipsa_freq_distribution <- function(x, y) {
   table <- pipsa_table_from_variables(x, y)
   addmargins(table)
 }
