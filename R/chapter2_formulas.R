@@ -8,7 +8,7 @@
 #' @param nrows Integer number of rows for the matrix.
 #' @return An R `table` object.
 #' @examples
-#' table_from_vector(c(10, 20, 30, 40), NRows = 2)
+#' pipsa_table_from_vector(c(10, 20, 30, 40), NRows = 2)
 #' @export
 pipsa_table_from_vector <- function(x, nrows) {
   as.table(matrix(x, nrow = nrows, byrow = TRUE))
@@ -22,7 +22,7 @@ pipsa_table_from_vector <- function(x, nrows) {
 #' @param y A vector for variable Y.
 #' @return A contingency table.
 #' @examples
-#' table_from_variables(c(1, 1, 2, 2), c("A", "B", "A", "B"))
+#' pipsa_table_from_variables(c(1, 1, 2, 2), c("A", "B", "A", "B"))
 #' @export
 pipsa_table_from_variables <- function(x, y) {
   table(x, y)
@@ -38,7 +38,7 @@ pipsa_table_from_variables <- function(x, y) {
 #' You can access d$x and d$y for the corresponding vectors
 #' @examples
 #' tbl <- table(c(1, 1, 2), c(3, 4, 4))
-#' table_to_vectors(tbl)
+#' pipsa_table_to_vectors(tbl)
 #' @export
 pipsa_table_to_vectors <- function(tbl) {
   df_freq <- as.data.frame(tbl)
@@ -64,7 +64,7 @@ pipsa_table_to_vectors <- function(tbl) {
 #' @param y A vector for variable Y.
 #' @return A 1D table of marginal frequencies for X.
 #' @examples
-#' marginal_x(c(1, 1, 2, 2), c(3, 4, 3, 4))
+#' pipsa_marginal_x(c(1, 1, 2, 2), c(3, 4, 3, 4))
 #' @export
 pipsa_marginal_x <- function(x, y) {
   margin.table(pipsa_table_from_variables(x, y), 1)
@@ -78,7 +78,7 @@ pipsa_marginal_x <- function(x, y) {
 #' @param y A vector for variable Y.
 #' @return A 1D table of marginal frequencies for Y.
 #' @examples
-#' marginal_y(c(1, 1, 2, 2), c(3, 4, 3, 4))
+#' pipsa_marginal_y(c(1, 1, 2, 2), c(3, 4, 3, 4))
 #' @export
 pipsa_marginal_y <- function(x, y) {
   margin.table(pipsa_table_from_variables(x, y), 2)
@@ -93,7 +93,7 @@ pipsa_marginal_y <- function(x, y) {
 #' @param y A vector for variable Y.
 #' @return Logical `TRUE` if independent, `FALSE` otherwise.
 #' @examples
-#' is_independent(c(1, 1, 2, 2), c(3, 4, 3, 4))
+#' pipsa_is_independent(c(1, 1, 2, 2), c(3, 4, 3, 4))
 #' @export
 pipsa_is_independent <- function(x, y) {
   tbl <- pipsa_table_from_variables(x, y)
@@ -113,7 +113,7 @@ pipsa_is_independent <- function(x, y) {
 #' @param y Numeric vector for Y.
 #' @return Numeric covariance value.
 #' @examples
-#' covariance(c(1, 2, 3), c(2, 4, 6))
+#' pipsa_covariance(c(1, 2, 3), c(2, 4, 6))
 #' @export
 pipsa_covariance <- function(x, y) {
   mean((x - mean(x)) * (y - mean(y)))
@@ -126,7 +126,7 @@ pipsa_covariance <- function(x, y) {
 #' @param x A numeric vector.
 #' @return The population variance.
 #' @examples
-#' variance(c(1, 2, 3, 4, 5))
+#' pipsa_variance(c(1, 2, 3, 4, 5))
 #' @export
 pipsa_variance <- function(x) {
   mean((x - mean(x))^2)
@@ -139,7 +139,7 @@ pipsa_variance <- function(x) {
 #' @param x A numeric vector.
 #' @return The population standard deviation.
 #' @examples
-#' std_deviation(c(1, 2, 3, 4, 5))
+#' pipsa_std_deviation(c(1, 2, 3, 4, 5))
 #' @export
 pipsa_std_deviation <- function(x) {
   sqrt(pipsa_variance(x))
@@ -154,7 +154,7 @@ pipsa_std_deviation <- function(x) {
 #' @param y Numeric vector for Y.
 #' @return Numeric correlation between -1 and 1.
 #' @examples
-#' linear_correlation(c(1, 2, 3, 4), c(2, 4, 6, 8))
+#' pipsa_linear_correlation(c(1, 2, 3, 4), c(2, 4, 6, 8))
 #' @export
 pipsa_linear_correlation <- function(x, y) {
   pipsa_covariance(x, y) / (pipsa_std_deviation()(x) * pipsa_std_deviation(y))
@@ -172,7 +172,7 @@ pipsa_linear_correlation <- function(x, y) {
 #' @return A data.frame with counts and relative frequencies.
 #' @examples
 #' tbl <- table(c(1, 1, 2, 2), c("A", "B", "A", "B"))
-#' cond_dist_gen(tbl, condition_var = "x", value = "1")
+#' pipsa_cond_dist_gen(tbl, condition_var = "x", value = "1")
 #' @export
 pipsa_cond_dist_gen <- function(values, condition_var = c("x", "y"), value) {
   condition_var <- match.arg(condition_var)
@@ -257,7 +257,7 @@ pipsa_mom_cent <- function(values, r, s) {
 #' @examples
 #' x <- c(1, 2, 3, 4, 5)
 #' y <- c(2, 4, 5, 8, 10)
-#' model_func(x, y, fitting = "l")
+#' pipsa_model_func(x, y, fitting = "l")
 #' @export
 pipsa_model_func <- function(data_x, data_y, fitting) {
   n <- length(data_y)

@@ -6,7 +6,7 @@
 #' @param order Integer order of the moving average.
 #' @return A filtered time series object.
 #' @examples
-#' moving_average(c(10, 12, 15, 14, 18, 20, 22), order = 3)
+#' pipsa_moving_average(c(10, 12, 15, 14, 18, 20, 22), order = 3)
 #' @export
 pipsa_moving_average <- function(arr, order) {
   tmparr <- c(1)
@@ -38,7 +38,7 @@ pipsa_moving_average <- function(arr, order) {
 #' deseasonalized data, and trend model.
 #' @examples
 #' data_vals <- c(10, 15, 8, 20, 12, 18, 9, 25)
-#' time_series(data_vals, initialyear = 2020, freq = 4)
+#' pipsa_time_series(data_vals, initialyear = 2020, freq = 4)
 #' @export
 pipsa_time_series <- function(data_array, initial_year, freq) {
   # time series data
@@ -114,7 +114,7 @@ pipsa_time_series <- function(data_array, initial_year, freq) {
 #' @param n Integer lag/frequency.
 #' @return Numeric correlation value.
 #' @examples
-#' auto_correl(c(1, 3, 2, 5, 4, 7, 6, 9), n = 2)
+#' pipsa_auto_correl(c(1, 3, 2, 5, 4, 7, 6, 9), n = 2)
 #' @export
 pipsa_auto_correl <- function(data, n) {
   # Remove the last n data points
@@ -133,7 +133,7 @@ pipsa_auto_correl <- function(data, n) {
 #' @param data Numeric vector of time series observations.
 #' @return Prints the highest correlation frequency to console.
 #' @examples
-#' calculate_correl(c(1, 4, 2, 8, 2, 4, 2, 8, 3, 5, 2, 9))
+#' pipsa_calculate_correl(c(1, 4, 2, 8, 2, 4, 2, 8, 3, 5, 2, 9))
 #' @export
 pipsa_calculate_correl <- function(data) {
   biggest <- 0
@@ -169,7 +169,7 @@ pipsa_calculate_correl <- function(data) {
 #' @param x A model (obtained from lm())
 #' @return A string representation of the linear function.
 #' @examples
-#' obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
+#' pipsa_obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
 #' @export
 pipsa_obtain_function_from_model <- function(model) {
   intercept <- round(model$coefficients[1], 5)

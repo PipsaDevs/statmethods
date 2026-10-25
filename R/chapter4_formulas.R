@@ -6,7 +6,7 @@
 #' @param y Number of items to choose (k).
 #' @return Number of possible combinations.
 #' @examples
-#' combination(5, 2)
+#' pipsa_combination(5, 2)
 #' @export
 pipsa_combination <- function(x, y) {
   choose(x, y)
@@ -20,7 +20,7 @@ pipsa_combination <- function(x, y) {
 #' @param y An array
 #' @return The percentage
 #' @examples
-#' conditional_probability(c(0.1, 0.2, 0.3), c(0.01, 0.02, 0.03))
+#' pipsa_conditional_probability(c(0.1, 0.2, 0.3), c(0.01, 0.02, 0.03))
 #' @export
 pipsa_conditional_probability <- function(x, y) {
   # both x and y will be an array of probabilities, c(a, b, c, ...)
@@ -34,5 +34,4 @@ pipsa_conditional_probability <- function(x, y) {
   print(paste(d, "%"))
 
   return(d)
-
 }
