@@ -65,6 +65,16 @@ pipsa_quartile <- function(x, y) {
   pipsa_quantile(x, y)
 }
 
+#' Decile
+#'
+#' Calculates the decile of a numeric vector
+#'
+#' @param x The vector with raw numeric values
+#' @param y The desired decile
+#' @return The decile y of x
+#' @example
+#' pipsa_decile(c(1, 1, 2, 5, -54, 9, 67), 4)
+#' @export
 pipsa_decile <- function(x, y) {
   pipsa_quantile(x, y / 10)
 }
