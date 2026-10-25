@@ -482,7 +482,7 @@ pipsa_generate_vector_with_frequencies <- function(x, n) {
     }
   }
 
-  return(res)
+  res
 }
 
 #' Vector info
