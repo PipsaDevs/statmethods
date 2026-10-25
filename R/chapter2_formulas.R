@@ -28,6 +28,21 @@ pipsa_table_from_variables <- function(x, y) {
   table(x, y)
 }
 
+#' Two-Variable Frequency distribution
+#'
+#' Creates a frequency table with their totals
+#'
+#' @param x A vector for variable X.
+#' @param y A vector for variable Y.
+#' @return A contingency table.
+#' @examples
+#' pipsa_table_from_variables(c(1, 1, 2, 2), c("A", "B", "A", "B"))
+#' @export
+pipsa_freq_distribution() <- function(x, y) {
+  table <- pipsa_table_from_variables(x, y)
+  addmargins(table)
+}
+
 #' Reconstruct Observation Vectors from Contingency Table
 #'
 #' Expands a contingency table back into
