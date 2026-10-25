@@ -57,21 +57,12 @@ pipsa_percentile <- function(x, y) {
 #' pipsa_quartile(c(1, 1, 2, 5, -54, 9, 67), 1)
 #' @export
 pipsa_quartile <- function(x, y) {
-  prob <- 0
-
-  if (y == 1) {
-    prob <- 0.25
-  } else if (y == 2) {
-    prob <- 0.5 # Also known as Me
-  } else if (y == 3) {
-    prob <- 0.75
-  } else if (y == 4) {
-    prob <- 1
-  } else {
-    print("That quartile value doesn't exist! Setting it to zero...")
+  if (!y %in% 1:4) {
+    print("Invalid y value")
+    stop()
   }
-
-  pipsa_quantile(x, prob)
+  y <- y / 4
+  pipsa_quantile(x, y)
 }
 
 pipsa_decile <- function(x, y) {
