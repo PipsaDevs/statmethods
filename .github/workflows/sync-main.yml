@@ -1,0 +1,45 @@
+name: Sync Main to All Branches
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Requires write permissions to push to branches
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all branches and commit history
+
+      - name: Configure Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge main into active branches
+        run: |
+          # Fetch all remote branches
+          git fetch --all
+
+          # Loop through all remote branches excluding HEAD and main
+          for branch in $(git branch -r | grep -v '->' | grep -v 'origin/main' | sed 's/origin\///'); do
+            echo "----------------------------------------"
+            echo "Syncing branch: $branch"
+
+            git checkout "$branch"
+
+            # Attempt to merge main
+            if git merge origin/main --no-edit; then
+              git push origin "$branch"
+              echo "Successfully synced $branch"
+            else
+              echo "Merge conflict detected on $branch. Skipping auto-push."
+              git merge --abort
+            fi
+          done
