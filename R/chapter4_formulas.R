@@ -1,6 +1,7 @@
 #' Combinations (n choose k)
 #'
-#' Computes the number of combinations of x items taken y at a time without repetition: choose(x, y).
+#' Computes the number of combinations of x items
+#' taken y at a time without repetition: choose(x, y).
 #'
 #' @param x Total number of items (n).
 #' @param y Number of items to choose (k).
@@ -27,7 +28,7 @@ pipsa_conditional_probability <- function(x, y) {
 
   d <- 0
 
-  for (i in 1:length(x)) {
+  for (i in seq_along(x)) {
     d <- d + x[i] * y[i]
   }
 
