@@ -4,12 +4,14 @@
 \alias{bundle}
 \title{Bundle a Function and All Its Custom Dependencies}
 \usage{
-bundle(fn, copy = TRUE)
+bundle(fn, copy = TRUE, env = parent.frame())
 }
 \arguments{
 \item{fn}{Function name (as a bare symbol or a character string).}
 
 \item{copy}{Logical, whether to automatically copy to the clipboard.}
+
+\item{env}{The environment to search in}
 }
 \value{
 Invisibly returns the concatenated code string.
