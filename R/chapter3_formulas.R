@@ -29,8 +29,8 @@ pipsa_moving_average <- function(arr, order) {
 #' using moving averages
 #' and fits a linear trend to deseasonalized data.
 #'
-#' @param arr Numeric vector of time series observations.
-#' @param initialyear Starting year for the time series.
+#' @param data_array Numeric vector of time series observations.
+#' @param initial_year Starting year for the time series.
 #' @param freq Seasonal frequency (e.g., 4 for quarterly, 12 for monthly).
 #' @return Displays plots and prints trend equation to console.
 #' Also returns a list containing
@@ -166,7 +166,7 @@ pipsa_calculate_correl <- function(data) {
 #' Creates a string from a linear model's coefficients
 #' in the form "intercept + slope * x".
 #'
-#' @param x A model (obtained from lm())
+#' @param model A model (obtained from lm())
 #' @return A string representation of the linear function.
 #' @examples
 #' pipsa_obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
