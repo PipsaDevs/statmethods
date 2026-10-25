@@ -19,7 +19,7 @@ pipsa_print <- function(x, string = "", round = 5) {
 
 # ========================================================================
 
-#' Hugo please add comments to these functions if you want or if not- idk man XDXDXD
+
 
 pipsa_quantile <- function(x, y) {
   if (y > 1) {
