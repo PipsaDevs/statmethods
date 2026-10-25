@@ -2,64 +2,65 @@ name: Sync Main to All Branches
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+
+# Never run two syncs at once; a newer push waits for the running one.
+concurrency:
+  group: sync-main
+  cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN }}
 
       - name: Configure Git identity
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Merge main into active branches
+      - name: Merge main into all branches
         run: |
-          git fetch --all
+          git fetch origin --prune
+          failed=()
 
-          FAILED_BRANCHES=()
-          SUCCESS_BRANCHES=()
+          while read -r branch; do
+            [ "$branch" = "HEAD" ] && continue
+            [ "$branch" = "main" ] && continue
 
-          # Safely stream remote branch names excluding HEAD and main
-          git for-each-ref --format='%(refname:short)' refs/remotes/origin | grep -v -E '^origin/(HEAD|main)$' | while read -r remote_branch; do
-            branch="${remote_branch#origin/}"
-            echo "----------------------------------------"
-            echo "Syncing branch: $branch"
+            echo "---- $branch"
 
-            # Create or reset local branch tracking remote head
-            if ! git checkout -B "$branch" "$remote_branch"; then
-              echo "Failed to checkout $branch"
+            # Nothing to do if the branch already contains main.
+            if git merge-base --is-ancestor origin/main "origin/$branch"; then
+              echo "Already up to date"
               continue
             fi
 
-            # Attempt merge from origin/main
-            if git merge origin/main --no-edit; then
-              if git push origin "$branch"; then
-                echo "Successfully synced $branch"
-                echo "| $branch | :white_check_mark: Synced |" >> $GITHUB_STEP_SUMMARY
-              else
-                echo "Failed to push $branch"
-                echo "| $branch | :x: Push Failed (Protection Rule?) |" >> $GITHUB_STEP_SUMMARY
-              fi
-            else
-              echo "Merge conflict on $branch. Skipping."
-              git merge --abort
-              echo "| $branch | :warning: Merge Conflict |" >> $GITHUB_STEP_SUMMARY
+            # Orphan branches (e.g. gh-pages) share no history with main.
+            if ! git merge-base origin/main "origin/$branch" > /dev/null 2>&1; then
+              echo "::notice::Skipping $branch (no common history with main)"
+              continue
             fi
-          done
 
-      - name: Write Job Summary Header
-        if: always()
-        run: |
-          echo "### Branch Sync Results" >> $GITHUB_STEP_SUMMARY
-          echo "| Branch | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+            git checkout -q -B "$branch" "origin/$branch"
+
+            if git merge origin/main --no-edit && git push origin "$branch"; then
+              echo "Synced $branch"
+            else
+              echo "::warning::Could not sync $branch"
+              git merge --abort 2>/dev/null || true
+              failed+=("$branch")
+            fi
+          done < <(git for-each-ref --format='%(refname:lstrip=3)' refs/remotes/origin)
+
+          if [ ${#failed[@]} -gt 0 ]; then
+            echo "::error::Failed to sync: ${failed[*]}"
+            exit 1
+          fi
