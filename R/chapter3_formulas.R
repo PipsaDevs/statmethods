@@ -38,7 +38,7 @@ pipsa_moving_average <- function(arr, order) {
 #' deseasonalized data, and trend model.
 #' @examples
 #' data_vals <- c(10, 15, 8, 20, 12, 18, 9, 25)
-#' pipsa_time_series(data_vals, initialyear = 2020, freq = 4)
+#' pipsa_time_series(data_vals, 2020, 4)
 #' @export
 pipsa_time_series <- function(data_array, initial_year, freq) {
   # time series data
