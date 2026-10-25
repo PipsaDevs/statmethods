@@ -465,7 +465,8 @@ pipsa_quantile_continuous <- function(c, N, L, N_prev, ni, ai) {
 #' Generates a vector with given data and frequencies
 #' @param x Vector of values
 #' @param n Vector of frequencies
-#' @return A vector with each value of x repeating by its respective y frequencies
+#' @return A vector with each value of x
+#' repeating by its respective y frequencies
 #' @examples
 #' pipsa_generate_vector_with_frequencies(c(1, 2, 3), c(4, 5, 6))
 #' @export
