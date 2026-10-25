@@ -431,7 +431,7 @@ pipsa_generate_vector_with_frequencies <- function(x, n) {
 
   index <- 1
 
-  for (i in 1:length(n)) {
+  for (i in seq_along(n)) {
     for (j in 1:n[i]) {
       res <- c(res, x[i])
       index <- index + 1
