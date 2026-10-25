@@ -26,12 +26,12 @@ pipsa_quantile <- function(x, y) {
     y <- y / 100
   }
 
-  return(quantile(x, y, type = 2))
+  quantile(x, y, type = 2)
 }
 
 pipsa_percentile <- function(x, y) {
   # alias function
-  return(pipsa_quantile(x, y))
+  pipsa_quantile(x, y)
 }
 
 pipsa_quartile <- function(x, y) {
@@ -49,11 +49,11 @@ pipsa_quartile <- function(x, y) {
     print("That quartile value doesn't exist! Setting it to zero...")
   }
 
-  return(pipsa_quantile(x, prob))
+  pipsa_quantile(x, prob)
 }
 
 pipsa_decile <- function(x, y) {
-  return(pipsa_quantile(x, y / 10))
+  pipsa_quantile(x, y / 10)
 }
 
 #' Absolute frequency
