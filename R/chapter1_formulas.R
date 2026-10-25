@@ -543,7 +543,7 @@ pipsa_vector_info <- function(x, print = TRUE) {
   )
 }
 
-#' Frequency Distribution
+#' Frequency Distribution from histogram
 #'
 #' Creates a frequency distribution board with info
 #'
@@ -552,9 +552,9 @@ pipsa_vector_info <- function(x, print = TRUE) {
 #' @param barplot Plots the bar to check if the inputs are correct
 #' @return data.Frame with the frequency distribution
 #' @examples
-#' pipsa_freq_distribution(c(0, 10, 50, 100), c(3.22, 1.34, 0.41))
+#' pipsa_freq_distribution_from_histogram(c(0, 10, 50, 100), c(3.22, 1.34, 0.41))
 #' @export
-pipsa_freq_distribution <- function(breaks, heights, barplot) {
+pipsa_freq_distribution_from_histogram <- function(breaks, heights, barplot) {
   widths <- diff(breaks)
 
   frequencies <- widths * heights
