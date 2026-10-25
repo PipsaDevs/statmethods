@@ -22,38 +22,38 @@ pipsa_print <- function(x, string = "", round = 5) {
 #' Hugo please add comments to these functions if you want or if not- idk man XDXDXD
 
 pipsa_quantile <- function(x, y) {
-    if (y > 1) {
-        y <- y / 100
-    }
+  if (y > 1) {
+    y <- y / 100
+  }
 
-    return(quantile(x, y, type = 2))
+  return(quantile(x, y, type = 2))
 }
 
 pipsa_percentile <- function(x, y) {
-    # alias function
-    return(pipsa_quantile(x,y))
+  # alias function
+  return(pipsa_quantile(x, y))
 }
 
 pipsa_quartile <- function(x, y) {
-    prob <- 0
+  prob <- 0
 
-    if (y == 1) {
-        prob <- 0.25
-    } else if (y == 2) {
-        prob <- 0.5 # Also known as Me
-    } else if (y == 3) {
-        prob <- 0.75
-    } else if (y == 4) {
-        prob <- 1
-    } else {
-        print("That quartile value doesn't exist! Setting it to zero...")
-    }
+  if (y == 1) {
+    prob <- 0.25
+  } else if (y == 2) {
+    prob <- 0.5 # Also known as Me
+  } else if (y == 3) {
+    prob <- 0.75
+  } else if (y == 4) {
+    prob <- 1
+  } else {
+    print("That quartile value doesn't exist! Setting it to zero...")
+  }
 
-    return(pipsa_quantile(x, prob))
+  return(pipsa_quantile(x, prob))
 }
 
 pipsa_decile <- function(x, y) {
-    return(pipsa_quantile(x, y / 10))
+  return(pipsa_quantile(x, y / 10))
 }
 
 #' Absolute frequency
@@ -401,23 +401,21 @@ pipsa_quantile_continuous <- function(c, N, L, N_prev, ni, ai) {
 #' @param y Vector of frequencies
 #' @return A vector with each value of x repeating by its respective y frequencies
 #' @examples
-#' pipsa_generate_vector_with_frequencies(c(1,2,3), c(4,5,6))
+#' pipsa_generate_vector_with_frequencies(c(1, 2, 3), c(4, 5, 6))
 #' @export
 pipsa_generate_vector_with_frequencies <- function(x, n) {
+  res <- c()
 
-    res <- c()
+  index <- 1
 
-    index <- 1
-
-    for (i in 1:length(n)) {
-        for (j in 1:n[i]) {
-            res <- c(res, x[i])
-            index <- index + 1
-        }
+  for (i in 1:length(n)) {
+    for (j in 1:n[i]) {
+      res <- c(res, x[i])
+      index <- index + 1
     }
+  }
 
-    return(res)
-
+  return(res)
 }
 
 #' Vector info
