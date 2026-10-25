@@ -491,14 +491,10 @@ pipsa_generate_vector_with_frequencies <- function(x, n) {
 #' array to the screen (and also returns info)
 #'
 #' @param x A numeric vector
-<<<<<<< HEAD
 #' @param print Boolean to determine whether or not to print info to the screen. Default is True
-#' @return A list with the mean, median, mode, iqr, variance, standard deviation, coefficient of variation, skewness, kurtosis, and outliers
-=======
 #' @return A list with the mean, median, mode,
 #' iqr, variance, standard deviation, coefficient of variation,
 #' skewness, kurtosis, and outliers
->>>>>>> 8d205c7c3e325ed83b1905b11eaaff30b2de7267
 #' @examples
 #' pipsa_vector_info(c(1, 2, 3, 4, 5))
 #' @export
