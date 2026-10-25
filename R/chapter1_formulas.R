@@ -439,7 +439,7 @@ pipsa_generate_vector_with_frequencies <- function(x, n) {
     }
   }
 
-  return(res)
+  res
 }
 
 #' Vector info
@@ -483,7 +483,7 @@ pipsa_vector_info <- function(x) {
     pipsa_print(outliers$extreme_outliers)
   }
 
-  return(list(
+  list(
     mean = mean(x),
     median = median(x),
     mode = pipsa_stat_mode(x),
@@ -494,5 +494,5 @@ pipsa_vector_info <- function(x) {
     skewness = pipsa_f_skewness(x),
     kurtosis = pipsa_kurtosis(x),
     outliers = outliers
-  ))
+  )
 }
