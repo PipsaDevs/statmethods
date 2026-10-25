@@ -27,7 +27,7 @@ pipsa_print <- function(x, string = "", round = 5) {
 #' @param x The vector with raw numeric values
 #' @param y The desired quantile, either in percentage or in decimal format
 #' @return The quantile y of x
-#' @example
+#' @examples
 #' pipsa_quantile(c(1, 1, 2, 5, -54, 9, 67), 0.25)
 #' @export
 pipsa_quantile <- function(x, y) {
@@ -53,7 +53,7 @@ pipsa_percentile <- function(x, y) {
 #' @param x The vector with raw numeric values
 #' @param y The desired quartile in 1:4
 #' @return The quartile y of x
-#' @example
+#' @examples
 #' pipsa_quartile(c(1, 1, 2, 5, -54, 9, 67), 1)
 #' @export
 pipsa_quartile <- function(x, y) {
@@ -72,7 +72,7 @@ pipsa_quartile <- function(x, y) {
 #' @param x The vector with raw numeric values
 #' @param y The desired decile
 #' @return The decile y of x
-#' @example
+#' @examples
 #' pipsa_decile(c(1, 1, 2, 5, -54, 9, 67), 4)
 #' @export
 pipsa_decile <- function(x, y) {
