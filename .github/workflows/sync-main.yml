@@ -9,13 +9,13 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Requires write permissions to push to branches
+      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetches all branches and commit history
+          fetch-depth: 0
 
       - name: Configure Git identity
         run: |
@@ -24,22 +24,42 @@ jobs:
 
       - name: Merge main into active branches
         run: |
-          # Fetch all remote branches
           git fetch --all
 
-          # Loop through all remote branches excluding HEAD and main
-          for branch in $(git branch -r | grep -v '->' | grep -v 'origin/main' | sed 's/origin\///'); do
+          FAILED_BRANCHES=()
+          SUCCESS_BRANCHES=()
+
+          # Safely stream remote branch names excluding HEAD and main
+          git for-each-ref --format='%(refname:short)' refs/remotes/origin | grep -v -E '^origin/(HEAD|main)$' | while read -r remote_branch; do
+            branch="${remote_branch#origin/}"
             echo "----------------------------------------"
             echo "Syncing branch: $branch"
 
-            git checkout "$branch"
+            # Create or reset local branch tracking remote head
+            if ! git checkout -B "$branch" "$remote_branch"; then
+              echo "Failed to checkout $branch"
+              continue
+            fi
 
-            # Attempt to merge main
+            # Attempt merge from origin/main
             if git merge origin/main --no-edit; then
-              git push origin "$branch"
-              echo "Successfully synced $branch"
+              if git push origin "$branch"; then
+                echo "Successfully synced $branch"
+                echo "| $branch | :white_check_mark: Synced |" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "Failed to push $branch"
+                echo "| $branch | :x: Push Failed (Protection Rule?) |" >> $GITHUB_STEP_SUMMARY
+              fi
             else
-              echo "Merge conflict detected on $branch. Skipping auto-push."
+              echo "Merge conflict on $branch. Skipping."
               git merge --abort
+              echo "| $branch | :warning: Merge Conflict |" >> $GITHUB_STEP_SUMMARY
             fi
           done
+
+      - name: Write Job Summary Header
+        if: always()
+        run: |
+          echo "### Branch Sync Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
