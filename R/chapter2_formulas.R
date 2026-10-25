@@ -184,17 +184,18 @@ pipsa_linear_correlation <- function(x, y) {
 #' @param condition_var Either "x" (conditioning on row value)
 #' or "y" (conditioning on col value).
 #' @param value The specific value conditioned on (character or numeric).
+#' @param returnMean Returns the mean of the given conditional. Default FALSE
 #' @return A data.frame with counts and relative frequencies.
 #' @examples
 #' tbl <- table(c(1, 1, 2, 2), c("A", "B", "A", "B"))
 #' pipsa_cond_dist_gen(tbl, condition_var = "x", value = "1")
 #' @export
-pipsa_cond_dist_gen <- function(values, condition_var = c("x", "y"), value) {
+pipsa_cond_dist_gen <- function(values, condition_var = c("x", "y"), value, returnMean = FALSE) {
   condition_var <- match.arg(condition_var)
   if (condition_var == "x") {
     counts <- values[as.character(value), ]
     rel_freq <- counts / sum(counts)
-    data.frame(
+    res <- data.frame(
       y = names(counts),
       absolute = as.vector(counts),
       relative = as.vector(rel_freq)
@@ -202,11 +203,18 @@ pipsa_cond_dist_gen <- function(values, condition_var = c("x", "y"), value) {
   } else {
     counts <- values[, as.character(value)]
     rel_freq <- counts / sum(counts)
-    data.frame(
+    res <- data.frame(
       x = names(counts),
       absolute = as.vector(counts),
       relative = as.vector(rel_freq)
     )
+  }
+
+  if (returnMean) {
+    mean <- sum(res$relative * as.numeric(res$y))
+    return(list("table" = res, "mean" = mean))
+  } else {
+    res
   }
 }
 
