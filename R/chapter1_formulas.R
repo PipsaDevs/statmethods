@@ -11,13 +11,17 @@
 #' @examples
 #' print(3.14159)
 #' @export
-pipsa_print <- function(x, string = "", round = 5) {
-    if (length(x) > 1) {
-        print(string)
-        print(round(x, round))
+pipsa_print <- function(x, string = "", round = 5, reverse = FALSE) {
+  if (length(x) > 1) {
+    print(string)
+    print(round(x, round))
+  } else {
+    if (reverse == TRUE) {
+      print(paste(round(x, round), string))
     } else {
-        print(paste(string, round(x, round)))
+      print(paste(string, round(x, round)))
     }
+  }
 }
 
 # ========================================================================
@@ -25,38 +29,38 @@ pipsa_print <- function(x, string = "", round = 5) {
 #' Hugo please add comments to these functions if you want or if not- idk man XDXDXD
 
 pipsa_quantile <- function(x, y) {
-    if (y > 1) {
-        y <- y / 100
-    }
+  if (y > 1) {
+    y <- y / 100
+  }
 
-    return(quantile(x, y, type = 2))
+  return(quantile(x, y, type = 2))
 }
 
 pipsa_percentile <- function(x, y) {
-    # alias function
-    return(pipsa_quantile(x,y))
+  # alias function
+  return(pipsa_quantile(x, y))
 }
 
 pipsa_quartile <- function(x, y) {
-    prob <- 0
+  prob <- 0
 
-    if (y == 1) {
-        prob <- 0.25
-    } else if (y == 2) {
-        prob <- 0.5 # Also known as Me
-    } else if (y == 3) {
-        prob <- 0.75
-    } else if (y == 4) {
-        prob <- 1
-    } else {
-        print("That quartile value doesn't exist! Setting it to zero...")
-    }
+  if (y == 1) {
+    prob <- 0.25
+  } else if (y == 2) {
+    prob <- 0.5 # Also known as Me
+  } else if (y == 3) {
+    prob <- 0.75
+  } else if (y == 4) {
+    prob <- 1
+  } else {
+    print("That quartile value doesn't exist! Setting it to zero...")
+  }
 
-    return(pipsa_quantile(x, prob))
+  return(pipsa_quantile(x, prob))
 }
 
 pipsa_decile <- function(x, y) {
-    return(pipsa_quantile(x, y / 10))
+  return(pipsa_quantile(x, y / 10))
 }
 
 #' Absolute frequency
@@ -301,19 +305,43 @@ pipsa_cnt_moment <- function(x, r) pipsa_moment(x, r, mean(x))
 #' @examples
 #' p_skewness(c(1, 2, 2, 3, 4))
 #' @export
-pipsa_p_skewness <- function(x) (mean(x) - pipsa_stat_mode(x)) / pipsa_std_deviation(x)
+pipsa_p_skewness <- function(x) {
+  skewness <- (mean(x) - pipsa_stat_mode(x)) / pipsa_std_deviation(x)
+
+  if (interpretation == TRUE) {
+    if (skewness > 0) {
+      pipsa_print(skewness, "> 0, RIGHT / POSITIVE SKEW", 5, TRUE)
+    } else if (skewness == 0) {
+      pipsa_print(skewness, "= 0, SYMMETRIC", 5, TRUE)
+    } else {
+      pipsa_print(skewness, "< 0, LEFT / NEGATIVE SKEW", 5, TRUE)
+    }
+  }
+}
 
 #' Fisher's skewness coefficient
 #'
 #' Computes Fisher's skewness coefficient: m_3 / (std_dev^3).
 #'
 #' @param x A numeric vector.
+#' @param interpretation Set to FALSE by default, set to TRUE if you want the interpretation of the value
 #' @return The Fisher skewness coefficient.
 #' @examples
 #' f_skewness(c(1, 2, 3, 4, 5))
 #' @export
-pipsa_f_skewness <- function(x) {
-  pipsa_cnt_moment(x, 3) / (pipsa_std_deviation(x)^3)
+pipsa_f_skewness <- function(x, interpretation = FALSE) {
+  skewness <- pipsa_cnt_moment(x, 3) / (pipsa_std_deviation(x)^3)
+
+  if (interpretation == TRUE) {
+    if (skewness > 0) {
+      pipsa_print(skewness, "> 0, RIGHT / POSITIVE SKEW", 5, TRUE)
+    } else if (skewness == 0) {
+      pipsa_print(skewness, "= 0, SYMMETRIC", 5, TRUE)
+    } else {
+      pipsa_print(skewness, "< 0, LEFT / NEGATIVE SKEW", 5, TRUE)
+    }
+  }
+  skewness
 }
 
 #' Fisher's kurtosis coefficient
@@ -325,9 +353,18 @@ pipsa_f_skewness <- function(x) {
 #' @examples
 #' kurtosis(c(1, 2, 3, 4, 5))
 #' @export
-pipsa_kurtosis <- function(x) {
-  g <- pipsa_cnt_moment(x, 4) / (pipsa_std_deviation(x)^4)
-  g - 3
+pipsa_kurtosis <- function(x, interpretation = FALSE) {
+  g <- (pipsa_cnt_moment(x, 4) / (pipsa_std_deviation(x)^4)) - 3
+  if (interpretation == TRUE) {
+    if (g > 0) {
+      pipsa_print(g, "> 0, LEPTOKURTIC / MORE PEAKED THAN NORMAL", 5, TRUE)
+    } else if (g == 0) {
+      pipsa_print(g, "= 0, MESOKURTIC / SAME PEAKEDNESS AS THE NORMAL", 5, TRUE)
+    } else {
+      pipsa_print(g, "< 0, PLATYKURTIC / LESS PEAKED THAN NORMAL", 5, TRUE)
+    }
+  }
+  g
 }
 
 #' Detect Moderate and Extreme Outliers using Interquartile Range
@@ -388,7 +425,7 @@ pipsa_rms <- function(x) {
 #'
 #' @export
 pipsa_quantile_continuous <- function(c, N, L, N_prev, ni, ai) {
-    L + ((c * N - N_prev) / ni) * ai
+  L + ((c * N - N_prev) / ni) * ai
 }
 
 #' Generate vector from data and frequencies
@@ -398,23 +435,21 @@ pipsa_quantile_continuous <- function(c, N, L, N_prev, ni, ai) {
 #' @param y Vector of frequencies
 #' @return A vector with each value of x repeating by its respective y frequencies
 #' @examples
-#' pipsa_generate_vector_with_frequencies(c(1,2,3), c(4,5,6))
+#' pipsa_generate_vector_with_frequencies(c(1, 2, 3), c(4, 5, 6))
 #' @export
 pipsa_generate_vector_with_frequencies <- function(x, n) {
+  res <- c()
 
-    res <- c()
+  index <- 1
 
-    index <- 1
-
-    for (i in 1:length(n)) {
-        for (j in 1:n[i]) {
-            res <- c(res, x[i])
-            index <- index + 1
-        }
+  for (i in 1:length(n)) {
+    for (j in 1:n[i]) {
+      res <- c(res, x[i])
+      index <- index + 1
     }
+  }
 
-    return(res)
-
+  return(res)
 }
 
 #' Vector info
@@ -427,44 +462,44 @@ pipsa_generate_vector_with_frequencies <- function(x, n) {
 #' vector_info(c(1, 2, 3, 4, 5))
 #' @export
 pipsa_vector_info <- function(x) {
-    outliers <- pipsa_detect_outliers(x)
+  outliers <- pipsa_detect_outliers(x)
 
-    pipsa_print(mean(x), "Mean: ")
-    pipsa_print(median(x), "Median: ")
-    pipsa_print(pipsa_stat_mode(x), "Mode: ")
-    pipsa_print(pipsa_iqr(x), "IQR: ")
-    pipsa_print(pipsa_variance(x), "Variance: ")
-    pipsa_print(pipsa_std_deviation(x), "Standard Deviation: ")
-    pipsa_print(pipsa_cv(x), "Coefficient of Variation: ")
-    pipsa_print(pipsa_f_skewness(x), "Skewness: ")
-    pipsa_print(pipsa_kurtosis(x), "Kurtosis: ")
+  pipsa_print(mean(x), "Mean: ")
+  pipsa_print(median(x), "Median: ")
+  pipsa_print(pipsa_stat_mode(x), "Mode: ")
+  pipsa_print(pipsa_iqr(x), "IQR: ")
+  pipsa_print(pipsa_variance(x), "Variance: ")
+  pipsa_print(pipsa_std_deviation(x), "Standard Deviation: ")
+  pipsa_print(pipsa_cv(x), "Coefficient of Variation: ")
+  pipsa_print(pipsa_f_skewness(x, TRUE), "Skewness: ")
+  pipsa_print(pipsa_kurtosis(x, TRUE), "Kurtosis: ")
 
-    print("Moderate Outlier Bounds:")
-    pipsa_print(outliers$moderate_bounds)
+  print("Moderate Outlier Bounds:")
+  pipsa_print(outliers$moderate_bounds)
 
-    print("Extreme Outlier Bounds:")
-    pipsa_print(outliers$extreme_bounds)
+  print("Extreme Outlier Bounds:")
+  pipsa_print(outliers$extreme_bounds)
 
-    if (length(outliers$moderate_outliers) > 0) {
-        print("Moderate outliers:")
-        pipsa_print(outliers$moderate_outliers)
-    }
+  if (length(outliers$moderate_outliers) > 0) {
+    print("Moderate outliers:")
+    pipsa_print(outliers$moderate_outliers)
+  }
 
-    if (length(outliers$extreme_outliers) > 0) {
-        print("Extreme outliers:")
-        pipsa_print(outliers$extreme_outliers)
-    }
+  if (length(outliers$extreme_outliers) > 0) {
+    print("Extreme outliers:")
+    pipsa_print(outliers$extreme_outliers)
+  }
 
-    return(list(
-        mean = mean(x),
-        median = median(x),
-        mode = pipsa_stat_mode(x),
-        iqr = pipsa_iqr(x),
-        variance = pipsa_variance(x),
-        std_deviation = pipsa_std_deviation(x),
-        cv = pipsa_cv(x),
-        skewness = pipsa_f_skewness(x),
-        kurtosis = pipsa_kurtosis(x),
-        outliers = outliers
-    ))
+  return(list(
+    mean = mean(x),
+    median = median(x),
+    mode = pipsa_stat_mode(x),
+    iqr = pipsa_iqr(x),
+    variance = pipsa_variance(x),
+    std_deviation = pipsa_std_deviation(x),
+    cv = pipsa_cv(x),
+    skewness = pipsa_f_skewness(x),
+    kurtosis = pipsa_kurtosis(x),
+    outliers = outliers
+  ))
 }
