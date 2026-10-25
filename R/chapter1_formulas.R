@@ -56,7 +56,7 @@ pipsa_stat_mode <- function(x) {
 pipsa_iqr <- function(x) {
   q <- quantile(x, c(0.25, 0.75), type = 2)
   iqr <- q[2] - q[1]
-  return(iqr)
+  iqr
 }
 
 #' Absolute frequency of a number

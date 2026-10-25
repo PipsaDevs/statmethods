@@ -32,6 +32,5 @@ pipsa_conditional_probability <- function(x, y) {
   }
 
   print(paste(d, "%"))
-
-  return(d)
+  d
 }
