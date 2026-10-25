@@ -8,7 +8,7 @@
 #' @param nrows Integer number of rows for the matrix.
 #' @return An R `table` object.
 #' @examples
-#' pipsa_table_from_vector(c(10, 20, 30, 40), NRows = 2)
+#' pipsa_table_from_vector(c(10, 20, 30, 40), 2)
 #' @export
 pipsa_table_from_vector <- function(x, nrows) {
   as.table(matrix(x, nrow = nrows, byrow = TRUE))
