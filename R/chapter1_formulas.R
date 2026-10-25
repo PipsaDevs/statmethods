@@ -11,7 +11,7 @@
 #' @param round The number of decimals to round to (default is 5)
 #' @return The number printed on the console with correct rounding
 #' @examples
-#' print(3.14159)
+#' pipsa_print(3.14159)
 #' @export
 pipsa_print <- function(x, string = "", round = 5) {
   print(paste(string, round(x, round)))
@@ -20,7 +20,16 @@ pipsa_print <- function(x, string = "", round = 5) {
 # ========================================================================
 
 
-
+#' Quantile
+#'
+#' Calculates the quantile of a numeric vector
+#'
+#' @param x The vector with raw numeric values
+#' @param y The desired quantile, either in percentage or in decimal format
+#' @return The quantile y of x
+#' @example
+#' pipsa_quantile(c(1, 1, 2, 5, -54, 9, 67), 0.25)
+#' @export
 pipsa_quantile <- function(x, y) {
   if (y > 1) {
     y <- y / 100
@@ -63,7 +72,7 @@ pipsa_decile <- function(x, y) {
 #' @param x A vector of values.
 #' @return A frequency table (`table` object) with counts of each unique value.
 #' @examples
-#' res <- absolute_freq(c(1, 2, 2, 3, 3, 3, 4))
+#' res <- pipsa_absolute_freq(c(1, 2, 2, 3, 3, 3, 4))
 #' res == c(1, 2, 3, 1) # TRUE
 #' @export
 pipsa_absolute_freq <- function(x) table(x)
