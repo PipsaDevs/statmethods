@@ -542,3 +542,35 @@ pipsa_vector_info <- function(x, print = TRUE) {
     outliers = outliers
   )
 }
+
+#' Frequency Distribution
+#'
+#' Creates a frequency distribution board with info
+#'
+#' @param breaks Vector with each of the "cuts" in the x axis
+#' @param heights Vector with each of the heigths as shown in the y axis
+#' @param barplot Plots the bar to check if the inputs are correct
+#' @return data.Frame with the frequency distribution
+#' @examples
+#' pipsa_freq_distribution(c(0, 10, 50, 100), c(3.22, 1.34, 0.41))
+#' @export
+pipsa_freq_distribution <- function(breaks, heights, barplot) {
+  widths <- diff(breaks)
+
+  frequencies <- widths * heights
+
+  intervals <- c()
+  for (i in 2:length(breaks)) {
+    new <- paste("[", breaks[i - 1], ", ", breaks[i], ")")
+    intervals <- c(intervals, new)
+  }
+
+  print(intervals)
+
+  data.frame(
+    Interval = intervals,
+    Width = widths,
+    Height = heights,
+    Frequency = frequencies
+  )
+}
