@@ -12,7 +12,12 @@
 #' print(3.14159)
 #' @export
 pipsa_print <- function(x, string = "", round = 5) {
-    print(paste(string, round(x, round)))
+    if (length(x) > 1) {
+        print(string)
+        print(round(x, round))
+    } else {
+        print(paste(string, round(x, round)))
+    }
 }
 
 # ========================================================================
