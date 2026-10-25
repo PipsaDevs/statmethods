@@ -16,5 +16,5 @@ A frequency table (\code{table} object) of proportions summing to 1.
 Computes the relative frequency distribution (f_i = n_i / N) of a sample.
 }
 \examples{
-relative_freq(c(1, 2, 2, 3, 4))
+pipsa_relative_freq(c(1, 2, 2, 3, 4))
 }

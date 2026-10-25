@@ -10,11 +10,14 @@ pipsa_vector_info(x)
 \item{x}{A numeric vector}
 }
 \value{
-A list with the mean, median, mode, iqr, variance, standard deviation, coefficient of variation, skewness, kurtosis, and outliers
+A list with the mean, median, mode,
+iqr, variance, standard deviation, coefficient of variation,
+skewness, kurtosis, and outliers
 }
 \description{
-Prints a lot of useful information from an array to the screen (and also returns info)
+Prints a lot of useful information from an
+array to the screen (and also returns info)
 }
 \examples{
-vector_info(c(1, 2, 3, 4, 5))
+pipsa_vector_info(c(1, 2, 3, 4, 5))
 }

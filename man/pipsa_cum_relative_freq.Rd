@@ -16,5 +16,5 @@ A cumulative sum vector of proportions ending at 1.
 Computes cumulative relative frequencies (F_i = N_i / N).
 }
 \examples{
-cum_relative_freq(c(1, 2, 2, 3, 4))
+pipsa_cum_relative_freq(c(1, 2, 2, 3, 4))
 }

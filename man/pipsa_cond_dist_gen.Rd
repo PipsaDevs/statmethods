@@ -23,5 +23,5 @@ Computes the conditional distribution
 }
 \examples{
 tbl <- table(c(1, 1, 2, 2), c("A", "B", "A", "B"))
-cond_dist_gen(tbl, condition_var = "x", value = "1")
+pipsa_cond_dist_gen(tbl, condition_var = "x", value = "1")
 }

@@ -21,5 +21,5 @@ Prints a number/series of numbers with the
 correct rounding to do the exam faster
 }
 \examples{
-print(3.14159)
+pipsa_print(3.14159)
 }

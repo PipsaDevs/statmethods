@@ -12,11 +12,11 @@ pipsa_conditional_probability(x, y)
 \item{y}{An array}
 }
 \value{
-The percentage
+The conditional probability in decimal format
 }
 \description{
 Computes the conditional probability between two arrays of numbers
 }
 \examples{
-conditional_probability(c(0.1, 0.2, 0.3), c(0.01, 0.02, 0.03))
+pipsa_conditional_probability(c(0.1, 0.2, 0.3), c(0.01, 0.02, 0.03))
 }

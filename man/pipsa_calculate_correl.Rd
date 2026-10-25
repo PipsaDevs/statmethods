@@ -17,5 +17,5 @@ Checks auto_correlation for lags from 1 up to 12
 (or length-1) to find the frequency with the highest correlation.
 }
 \examples{
-calculate_correl(c(1, 4, 2, 8, 2, 4, 2, 8, 3, 5, 2, 9))
+pipsa_calculate_correl(c(1, 4, 2, 8, 2, 4, 2, 8, 3, 5, 2, 9))
 }

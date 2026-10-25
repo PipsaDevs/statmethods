@@ -22,6 +22,6 @@ Computes the population variance (divided by N, not quasi-variance N-1).
 Computes the population variance (divided by N, not quasi-variance N-1).
 }
 \examples{
-variance(c(1, 2, 3, 4, 5))
-variance(c(1, 2, 3, 4, 5))
+pipsa_variance(c(1, 2, 3, 4, 5))
+pipsa_variance(c(1, 2, 3, 4, 5))
 }

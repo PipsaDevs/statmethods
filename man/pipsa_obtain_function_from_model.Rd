@@ -7,7 +7,7 @@
 pipsa_obtain_function_from_model(model)
 }
 \arguments{
-\item{x}{A model (obtained from lm())}
+\item{model}{A model (obtained from lm())}
 }
 \value{
 A string representation of the linear function.
@@ -17,5 +17,5 @@ Creates a string from a linear model's coefficients
 in the form "intercept + slope * x".
 }
 \examples{
-obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
+pipsa_obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
 }

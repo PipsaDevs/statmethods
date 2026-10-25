@@ -19,5 +19,5 @@ Computes the central moment of order r
 (w.r.t. the mean): m_r = mean((x - mean)^r).
 }
 \examples{
-cnt_moment(c(1, 2, 3, 4, 5), r = 2)
+pipsa_cnt_moment(c(1, 2, 3, 4, 5), r = 2)
 }

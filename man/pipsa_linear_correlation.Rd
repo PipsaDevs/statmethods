@@ -19,5 +19,5 @@ Computes the Pearson linear correlation coefficient:
 cov(X, Y) / (std_dev(X) * std_dev(Y)).
 }
 \examples{
-linear_correlation(c(1, 2, 3, 4), c(2, 4, 6, 8))
+pipsa_linear_correlation(c(1, 2, 3, 4), c(2, 4, 6, 8))
 }

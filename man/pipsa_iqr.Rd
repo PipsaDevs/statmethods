@@ -16,5 +16,5 @@ The Interquartile Range of said array
 Computes the Interquartile Range of a given array
 }
 \examples{
-iqr(c(1, 2, 3, 4, 5))
+pipsa_iqr(c(1, 2, 3, 4, 5))
 }

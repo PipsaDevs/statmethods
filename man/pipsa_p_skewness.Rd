@@ -16,5 +16,5 @@ The Pearson skewness coefficient.
 Computes Pearson's mode skewness coefficient: (mean - mode) / std_deviation.
 }
 \examples{
-p_skewness(c(1, 2, 2, 3, 4))
+pipsa_p_skewness(c(1, 2, 2, 3, 4))
 }

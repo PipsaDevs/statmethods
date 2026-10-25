@@ -16,5 +16,5 @@ The Fisher skewness coefficient.
 Computes Fisher's skewness coefficient: m_3 / (std_dev^3).
 }
 \examples{
-f_skewness(c(1, 2, 3, 4, 5))
+pipsa_f_skewness(c(1, 2, 3, 4, 5))
 }

@@ -20,5 +20,5 @@ into a contingency table by row
 with a specified number of rows.
 }
 \examples{
-table_from_vector(c(10, 20, 30, 40), NRows = 2)
+pipsa_table_from_vector(c(10, 20, 30, 40), 2)
 }

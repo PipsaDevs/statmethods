@@ -16,5 +16,5 @@ Do i really need to explain this
 Computes the root mean square AKA the quadratic mean
 }
 \examples{
-rms(c(2, 0, 0, 4, 6, 9, 6, 7, 6, 6, 1))
+pipsa_rms(c(2, 0, 0, 4, 6, 9, 6, 7, 6, 6, 1))
 }

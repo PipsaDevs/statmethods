@@ -16,5 +16,5 @@ A numeric vector of standardized z-scores.
 Transforms data into standardized values: z = (x - mean) / std_dev.
 }
 \examples{
-std_variable(c(10, 20, 30, 40, 50))
+pipsa_std_variable(c(10, 20, 30, 40, 50))
 }

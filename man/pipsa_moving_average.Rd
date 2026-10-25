@@ -18,5 +18,5 @@ A filtered time series object.
 Computes the centered moving average of an array with a specific order.
 }
 \examples{
-moving_average(c(10, 12, 15, 14, 18, 20, 22), order = 3)
+pipsa_moving_average(c(10, 12, 15, 14, 18, 20, 22), order = 3)
 }

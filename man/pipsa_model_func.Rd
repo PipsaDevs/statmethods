@@ -30,5 +30,5 @@ and calculates Model, mse, Var(Y), and R^2.
 \examples{
 x <- c(1, 2, 3, 4, 5)
 y <- c(2, 4, 5, 8, 10)
-model_func(x, y, fitting = "l")
+pipsa_model_func(x, y, fitting = "l")
 }

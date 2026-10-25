@@ -19,5 +19,5 @@ Computes the relative frequency proportion
 (f_i = n_i / N) of a specific value.
 }
 \examples{
-relative_freq_of_number(c(1, 2, 2, 3, 4), 2)
+pipsa_relative_freq_of_number(c(1, 2, 2, 3, 4), 2)
 }

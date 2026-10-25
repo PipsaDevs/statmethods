@@ -16,5 +16,5 @@ A cumulative sum vector of counts.
 Computes cumulative absolute frequencies (N_i = sum_{j<=i} n_j).
 }
 \examples{
-cum_absolute_freq(c(1, 2, 2, 3, 4))
+pipsa_cum_absolute_freq(c(1, 2, 2, 3, 4))
 }

@@ -18,5 +18,5 @@ An integer representing the count of \code{y} in \code{x}.
 Counts how many times a specific value appears in a sample.
 }
 \examples{
-absolute_freq_of_number(c(1, 2, 2, 3, 4), 2)
+pipsa_absolute_freq_of_number(c(1, 2, 2, 3, 4), 2)
 }

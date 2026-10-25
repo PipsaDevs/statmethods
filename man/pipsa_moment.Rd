@@ -21,5 +21,5 @@ Computes the sample moment of order
 r with respect to constant c: mean((x - c)^r).
 }
 \examples{
-moment(c(1, 2, 3, 4, 5), r = 2, c = 0)
+pipsa_moment(c(1, 2, 3, 4, 5), r = 2, c = 0)
 }

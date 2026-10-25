@@ -20,5 +20,5 @@ of a sample with respect to a point p
 (defaults to the mean).
 }
 \examples{
-mse(c(1, 2, 3, 4, 5))
+pipsa_mse(c(1, 2, 3, 4, 5))
 }

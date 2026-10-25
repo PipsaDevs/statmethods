@@ -22,6 +22,6 @@ Computes the population standard deviation (sqrt of population variance).
 Computes the population standard deviation (sqrt of population variance).
 }
 \examples{
-std_deviation(c(1, 2, 3, 4, 5))
-std_deviation(c(1, 2, 3, 4, 5))
+pipsa_std_deviation(c(1, 2, 3, 4, 5))
+pipsa_std_deviation(c(1, 2, 3, 4, 5))
 }

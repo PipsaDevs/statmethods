@@ -19,5 +19,5 @@ individual observation vectors (x and y).
 }
 \examples{
 tbl <- table(c(1, 1, 2), c(3, 4, 4))
-table_to_vectors(tbl)
+pipsa_table_to_vectors(tbl)
 }

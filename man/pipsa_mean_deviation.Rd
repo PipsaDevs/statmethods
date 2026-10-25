@@ -20,5 +20,5 @@ of a sample with respect to a point p
 (defaults to the mean).
 }
 \examples{
-mean_deviation(c(1, 2, 3, 4, 5))
+pipsa_mean_deviation(c(1, 2, 3, 4, 5))
 }

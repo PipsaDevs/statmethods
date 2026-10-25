@@ -18,5 +18,5 @@ A contingency table.
 Creates a 2-way frequency table from two vectors X and Y.
 }
 \examples{
-table_from_variables(c(1, 1, 2, 2), c("A", "B", "A", "B"))
+pipsa_table_from_variables(c(1, 1, 2, 2), c("A", "B", "A", "B"))
 }

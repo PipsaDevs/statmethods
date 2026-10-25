@@ -16,5 +16,5 @@ A list containing moderate and extreme outliers.
 Detect Moderate and Extreme Outliers using Interquartile Range
 }
 \examples{
-detect_outliers(c(1, 2, 3, 4, 5, 100, 200))
+pipsa_detect_outliers(c(1, 2, 3, 4, 5, 100, 200))
 }

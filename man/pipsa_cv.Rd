@@ -16,5 +16,5 @@ The coefficient of variation.
 Computes the Pearson coefficient of variation: cv = std_dev / |mean|.
 }
 \examples{
-cv(c(10, 20, 30, 40, 50))
+pipsa_cv(c(10, 20, 30, 40, 50))
 }

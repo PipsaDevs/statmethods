@@ -7,11 +7,11 @@
 pipsa_time_series(data_array, initial_year, freq)
 }
 \arguments{
+\item{data_array}{Numeric vector of time series observations.}
+
+\item{initial_year}{Starting year for the time series.}
+
 \item{freq}{Seasonal frequency (e.g., 4 for quarterly, 12 for monthly).}
-
-\item{arr}{Numeric vector of time series observations.}
-
-\item{initialyear}{Starting year for the time series.}
 }
 \value{
 Displays plots and prints trend equation to console.
@@ -26,5 +26,5 @@ and fits a linear trend to deseasonalized data.
 }
 \examples{
 data_vals <- c(10, 15, 8, 20, 12, 18, 9, 25)
-time_series(data_vals, initialyear = 2020, freq = 4)
+pipsa_time_series(data_vals, 2020, 4)
 }

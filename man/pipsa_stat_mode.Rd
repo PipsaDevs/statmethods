@@ -16,5 +16,5 @@ The mode of the vector provided
 Computes the mode (most frequent value) of a numeric sample.
 }
 \examples{
-stat_mode(c(1, 2, 2, 3, 3, 4))
+pipsa_stat_mode(c(1, 2, 2, 3, 3, 4))
 }

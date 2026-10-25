@@ -19,5 +19,5 @@ Checks whether two variables X and Y
 are statistically independent (f_ij == f_i * f_j).
 }
 \examples{
-is_independent(c(1, 1, 2, 2), c(3, 4, 3, 4))
+pipsa_is_independent(c(1, 1, 2, 2), c(3, 4, 3, 4))
 }

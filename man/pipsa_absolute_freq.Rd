@@ -16,6 +16,6 @@ A frequency table (\code{table} object) with counts of each unique value.
 Computes the absolute frequency table of a vector with straight raw values
 }
 \examples{
-res <- absolute_freq(c(1, 2, 2, 3, 3, 3, 4))
+res <- pipsa_absolute_freq(c(1, 2, 2, 3, 3, 3, 4))
 res == c(1, 2, 3, 1) # TRUE
 }

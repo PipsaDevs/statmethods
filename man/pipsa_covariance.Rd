@@ -19,5 +19,5 @@ Computes the population covariance between variables X and Y:
 mean((x - mean(x)) * (y - mean(y))).
 }
 \examples{
-covariance(c(1, 2, 3), c(2, 4, 6))
+pipsa_covariance(c(1, 2, 3), c(2, 4, 6))
 }

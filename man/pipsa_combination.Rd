@@ -15,8 +15,9 @@ pipsa_combination(x, y)
 Number of possible combinations.
 }
 \description{
-Computes the number of combinations of x items taken y at a time without repetition: choose(x, y).
+Computes the number of combinations of x items
+taken y at a time without repetition: choose(x, y).
 }
 \examples{
-combination(5, 2)
+pipsa_combination(5, 2)
 }

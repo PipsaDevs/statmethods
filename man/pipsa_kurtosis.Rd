@@ -16,5 +16,5 @@ The excess kurtosis value.
 Computes Fisher's excess kurtosis: (m_4 / (std_dev^4)) - 3. Mesokurtic = 0.
 }
 \examples{
-kurtosis(c(1, 2, 3, 4, 5))
+pipsa_kurtosis(c(1, 2, 3, 4, 5))
 }

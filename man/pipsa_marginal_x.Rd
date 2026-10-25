@@ -18,5 +18,5 @@ A 1D table of marginal frequencies for X.
 Computes the marginal frequency distribution for variable X (rows).
 }
 \examples{
-marginal_x(c(1, 1, 2, 2), c(3, 4, 3, 4))
+pipsa_marginal_x(c(1, 1, 2, 2), c(3, 4, 3, 4))
 }

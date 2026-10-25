@@ -18,5 +18,5 @@ The ordinary moment value.
 Computes the ordinary moment of order r (w.r.t. origin 0): a_r = mean(x^r).
 }
 \examples{
-ord_moment(c(1, 2, 3, 4, 5), r = 2)
+pipsa_ord_moment(c(1, 2, 3, 4, 5), r = 2)
 }

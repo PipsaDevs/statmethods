@@ -19,5 +19,5 @@ Calculates the correlation between a time
 series and itself lagged by n periods.
 }
 \examples{
-auto_correl(c(1, 3, 2, 5, 4, 7, 6, 9), n = 2)
+pipsa_auto_correl(c(1, 3, 2, 5, 4, 7, 6, 9), n = 2)
 }
