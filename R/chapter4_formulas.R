@@ -1,3 +1,33 @@
+# ========================================================================
+# GENERAL FUNCTIONS (shared by most files)
+
+#' Print
+#'
+#' Prints a number/series of numbers with the
+#' correct rounding to do the exam faster
+#'
+#' @param x A number or series of numbers we want to print
+#' @param string A string to print before the number (default is empty)
+#' @param round The number of decimals to round to (default is 5)
+#' @return The number printed on the console with correct rounding
+#' @examples
+#' pipsa_print(3.14159)
+#' @export
+pipsa_print <- function(x, string = "", round = 5, reverse = FALSE) {
+  if (length(x) > 1) {
+    print(string)
+    print(round(x, round))
+  } else {
+    if (reverse == TRUE) {
+      print(paste(round(x, round), string))
+    } else {
+      print(paste(string, round(x, round)))
+    }
+  }
+}
+
+# ========================================================================
+
 #' Combinations (n choose k)
 #'
 #' Computes the number of combinations of x items
