@@ -55,6 +55,22 @@ pipsa_obtain_function_from_model <- function(model, y_on_x = TRUE) {
     }
   }
 }
+
+#' Obtain regression line from model coefficient
+#'
+#' Alias function. Creates a string from a linear model's coefficients
+#' in the form "intercept + slope * x".
+#'
+#' @param model A model (obtained from lm())
+#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @return A string representation of the linear function.
+#' @examples
+#' pipsa_regression_line_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
+#' @export
+pipsa_regression_line_from_model <- function(model, y_on_x = TRUE) {
+  # alias function
+  pipsa_obtain_function_from_model(model, y_on_x)
+}
 # ========================================================================
 
 #' Matrix / Vector to Contingency Table
