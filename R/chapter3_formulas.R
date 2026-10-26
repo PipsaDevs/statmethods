@@ -26,6 +26,26 @@ pipsa_print <- function(x, string = "", round = 5, reverse = FALSE) {
   }
 }
 
+#' Obtain Function from Model Coefficients
+#'
+#' Creates a string from a linear model's coefficients
+#' in the form "intercept + slope * x".
+#'
+#' @param model A model (obtained from lm())
+#' @return A string representation of the linear function.
+#' @examples
+#' pipsa_obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
+#' @export
+pipsa_obtain_function_from_model <- function(model) {
+  intercept <- round(model$coefficients[1], 5)
+  xslope <- round(model$coefficients[2], 5)
+
+  if (xslope >= 0) {
+    print(paste(intercept, "+", xslope, "x"))
+  } else {
+    print(paste(intercept, " ", xslope, "x"))
+  }
+}
 # ========================================================================
 
 #' Moving Average of a Time Series
@@ -189,27 +209,6 @@ pipsa_calculate_correl <- function(data) {
       ", with correlation: ", round(biggest, 5)
     )
   )
-}
-
-#' Obtain Function from Model Coefficients
-#'
-#' Creates a string from a linear model's coefficients
-#' in the form "intercept + slope * x".
-#'
-#' @param model A model (obtained from lm())
-#' @return A string representation of the linear function.
-#' @examples
-#' pipsa_obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
-#' @export
-pipsa_obtain_function_from_model <- function(model) {
-  intercept <- round(model$coefficients[1], 5)
-  xslope <- round(model$coefficients[2], 5)
-
-  if (xslope >= 0) {
-    print(paste(intercept, "+", xslope, "x"))
-  } else {
-    print(paste(intercept, " ", xslope, "x"))
-  }
 }
 
 #' Deflate Nominal Monetary Series to Real Values
