@@ -32,19 +32,44 @@ pipsa_print <- function(x, string = "", round = 5, reverse = FALSE) {
 #' in the form "intercept + slope * x".
 #'
 #' @param model A model (obtained from lm())
+#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
 #' @return A string representation of the linear function.
 #' @examples
 #' pipsa_obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
 #' @export
-pipsa_obtain_function_from_model <- function(model) {
+pipsa_obtain_function_from_model <- function(model, y_on_x = TRUE) {
   intercept <- round(model$coefficients[1], 5)
   xslope <- round(model$coefficients[2], 5)
 
   if (xslope >= 0) {
-    print(paste(intercept, "+", xslope, "x"))
+    if (y_on_x == TRUE) {
+      print(paste("y =", intercept, "+", xslope, "x"))
+    } else {
+      print(paste("x =", intercept, "+", xslope, "y"))
+    }
   } else {
-    print(paste(intercept, " ", xslope, "x"))
+    if (y_on_x == TRUE) {
+      print(paste("y =", intercept, " ", xslope, "x"))
+    } else {
+      print(paste("x =", intercept, " ", xslope, "y"))
+    }
   }
+}
+
+#' Obtain regression line from model coefficient
+#'
+#' Alias function. Creates a string from a linear model's coefficients
+#' in the form "intercept + slope * x".
+#'
+#' @param model A model (obtained from lm())
+#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @return A string representation of the linear function.
+#' @examples
+#' pipsa_regression_line_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
+#' @export
+pipsa_regression_line_from_model <- function(model, y_on_x = TRUE) {
+  # alias function
+  pipsa_obtain_function_from_model(model, y_on_x)
 }
 # ========================================================================
 
