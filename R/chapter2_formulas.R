@@ -501,3 +501,51 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
   )
   result
 }
+
+#' Predict Y given X (Regression of Y on X)
+#'
+#' Calculates the expected value of Y for a given X
+#' using a simple linear regression model.
+#'
+#' @param data_x Numeric vector for independent variable X.
+#' @param data_y Numeric vector for dependent variable Y.
+#' @param x_val Numeric value of X to predict Y.
+#' @return The expected numeric value of Y.
+#' @examples
+#' pipsa_predict_y(c(1, 2, 3), c(4, 5, 6), 10)
+#' @export
+pipsa_predict_y <- function(data_x, data_y, x_val) {
+  # Build the linear model of Y on X
+  model_data <- pipsa_model_func(data_x, data_y, fitting = "l")
+
+  a <- coef(model_data$Model)[1] # Intercept
+  b <- coef(model_data$Model)[2] # Slope
+
+  # Calculate y = a + bx
+  expected_y <- a + (b * x_val)
+  unname(expected_y)
+}
+
+#' Predict X given Y (Regression of X on Y)
+#'
+#' Calculates the expected value of X for a given Y
+#' using a simple linear regression model of X on Y.
+#'
+#' @param data_x Numeric vector for variable X.
+#' @param data_y Numeric vector for variable Y.
+#' @param y_val Numeric value of Y to predict X.
+#' @return The expected numeric value of X.
+#' @examples
+#' pipsa_predict_x(c(1, 2, 3), c(4, 5, 6), 10)
+#' @export
+pipsa_predict_x <- function(data_x, data_y, y_val) {
+  # Build the linear model of X on Y (swap the inputs)
+  model_data <- pipsa_model_func(data_y, data_x, fitting = "l")
+
+  a <- coef(model_data$Model)[1] # Intercept
+  b <- coef(model_data$Model)[2] # Slope
+
+  # Calculate x = a + by
+  expected_x <- a + (b * y_val)
+  unname(expected_x)
+}
