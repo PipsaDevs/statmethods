@@ -30,7 +30,13 @@ pipsa_regression_line_from_model(res_x_on_y$Model, FALSE) # Sol.: x = 0.61 y + 2
 # (e) Draw both regression lines and check that they intersect at the point where the means of both variables coincide.
 
 p <- plot(x, y)
-curve(res_x_on_y$Model)
+pipsa_plot_from_model(res_x_on_y$Model, "red", 2, FALSE)
+pipsa_plot_from_model(res_y_on_x$Model, "blue")
 
-# (f) How many errors can we expect from a worker who works 10 consecutive hours?
-# (g) How many consecutive working hours can we expect a worker who makes 13 errors to have worked?
+pipsa_plot_point(mean(x), mean(y)) # They do!
+
+# (f) Expected errors for 10 hours
+pipsa_predict_y(data_x = x, data_y = y, x_val = 10)
+
+# (g) Expected hours for 13 errors
+pipsa_predict_x(data_x = x, data_y = y, y_val = 13)
