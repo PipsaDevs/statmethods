@@ -20,8 +20,14 @@ if (file.exists(desc_file)) {
       'person("PipsaDevs", email = "pipsadevs@uma.es", role = c("aut", "cre", "cph"))',
       desc_lines
     )
-    writeLines(desc_lines, desc_file)
   }
+  if (!any(grepl("^Author:", desc_lines))) {
+    desc_lines <- c(desc_lines, "Author: PipsaDevs [aut, cre, cph]")
+  }
+  if (!any(grepl("^Maintainer:", desc_lines))) {
+    desc_lines <- c(desc_lines, "Maintainer: PipsaDevs <pipsadevs@uma.es>")
+  }
+  writeLines(desc_lines, desc_file)
 }
 
 # --- Step 2: Regenerate roxygen2 documentation & NAMESPACE ---
