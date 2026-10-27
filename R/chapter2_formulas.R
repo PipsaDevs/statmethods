@@ -173,6 +173,8 @@ pipsa_freq_distribution <- function(x, y) {
 pipsa_table_to_vectors <- function(tbl) {
   df_freq <- as.data.frame(tbl)
 
+  names_tbl <- names(dimnames(tbl))
+
   x_vec <- rep(df_freq[[1]], times = df_freq$Freq)
   y_vec <- rep(df_freq[[2]], times = df_freq$Freq)
 
@@ -183,7 +185,11 @@ pipsa_table_to_vectors <- function(tbl) {
     y_vec <- as.numeric(as.character(y_vec))
   }
 
-  data.frame(x = x_vec, y = y_vec)
+  if (!is.null(names_tbl) && tolower(names_tbl[1]) == "y") {
+    data.frame(x = y_vec, y = x_vec)
+  } else {
+    data.frame(x = x_vec, y = y_vec)
+  }
 }
 
 #' Marginal Distribution of X
