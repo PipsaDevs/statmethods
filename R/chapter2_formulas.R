@@ -8,12 +8,12 @@
 #'
 #' @param x A number or series of numbers we want to print
 #' @param string A string to print before the number (default is empty)
-#' @param round The number of decimals to round to (default is 5)
+#' @param round_val The number of decimals to round to (default is 5)
 #' @return The number printed on the console with correct rounding
 #' @examples
 #' pipsa_print(3.14159)
 #' @export
-pipsa_print <- function(x, string = "", round = 5, reverse = FALSE) {
+pipsa_print <- function(x, string = "", round_val = 5, reverse = FALSE) {
   if (length(x) > 1) {
     print(string)
     print(round(x, round))
