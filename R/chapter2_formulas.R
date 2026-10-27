@@ -71,6 +71,46 @@ pipsa_regression_line_from_model <- function(model, y_on_x = TRUE) {
   # alias function
   pipsa_obtain_function_from_model(model, y_on_x)
 }
+
+#' Plot function from model
+#'
+#' Gets a model and plots the function
+#'
+#' @param model A model (obtained from lm())
+#' @param col The color of the line. Default: "red"
+#' @param lineWidth The width of the line. Default: 2
+#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @return The representation of the function in a plot
+#' @examples
+#' pipsa_plot_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)), "red", 2)
+#' @export
+pipsa_plot_from_model <- function(model, col = "red", lineWidth = 2, y_on_x = TRUE) {
+  coef <- coef(model)
+
+  if (y_on_x == TRUE) {
+    abline(a = coef[1], b = coef[2], col = col, lwd = lineWidth)
+  } else {
+    abline(a = -coef[1] / coef[2], b = 1 / coef[2], col = col, lwd = lineWidth)
+  }
+}
+
+#' Plot point
+#'
+#' Gets coordinates for a point and plots it
+#'
+#' @param x x coordinate
+#' @param y y coordinate
+#' @param color The color of the point
+#' @param pch The "shape" of the point
+#' @param cex The "thickness" of the point
+#' @return The point plotted on the plot
+#' @examples
+#' pipsa_plot_point(2, 3, 19, 1.5)
+#' @export
+pipsa_plot_point <- function(x, y, color = "black", pch = 19, cex = 1.5) {
+  points(x, y, col = color, pch = pch, cex = cex)
+}
+
 # ========================================================================
 
 #' Matrix / Vector to Contingency Table
@@ -341,21 +381,23 @@ pipsa_mom_cent <- function(values, r, s) {
 #' Regression Curve Fitting & Evaluation
 #'
 #' Fits a mathematical model to bivariate data (X, Y)
-#' and calculates Model, mse, Var(Y), and R^2.
+#' and calculates Model, mse, Var(Y), R^2, and predictions.
 #'
 #' @param data_x Numeric vector for independent variable X.
 #' @param data_y Numeric vector for dependent variable Y.
 #' @param fitting Character specifying model type:
 #'   - "l": Linear (y = a + bx)
+#'   - "lo": Logarithmic (y = a + b * ln(x))
 #'   - "e": Exponential (y = a * x^b)
 #'   - "i": Hyperbolic/Inverse (y = 1 / (a + bx))
 #'   - "q": Quadratic (y = ax^2 + bx + c)
 #'   - "t": Trigonometric (y = a·sin(x) + b·cos(x))
-#' @return A named list: Model, mse, Variance of Y, R^2, Plot, Curve.
+#' @return A named list: Model, mse, VarianceY, R2, Plot, Curve, Predict (function).
 #' @examples
 #' x <- c(1, 2, 3, 4, 5)
 #' y <- c(2, 4, 5, 8, 10)
-#' pipsa_model_func(x, y, fitting = "l")
+#' res <- pipsa_model_func(x, y, fitting = "l")
+#' res$Predict(20)
 #' @export
 pipsa_model_func <- function(data_x, data_y, fitting) {
   n <- length(data_y)
@@ -364,6 +406,7 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
   # preparing graphical info
   p <- plot(data_x, data_y)
   curve <- NULL
+  predict_func <- NULL
 
   # the function must perform different
   # operations depending on the type of fitting specified,
@@ -382,6 +425,26 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 
     y_est <- a + b * data_x
     err <- err - y_est
+    predict_func <- function(x_val) {
+      a + b * x_val
+    }
+  } else if (fitting == "lo") {
+    # LOGARITHMIC
+    model <- lm(data_y ~ log(data_x))
+
+    a <- coef(model)[1]
+    b <- coef(model)[2]
+
+    curve <- curve(
+      (a + b * log(x)),
+      from = min(data_x), to = max(data_x), col = "orange", add = TRUE
+    )
+
+    y_est <- a + b * log(data_x)
+    err <- err - y_est
+    predict_func <- function(x_val) {
+      a + b * log(x_val)
+    }
   } else if (fitting == "e") {
     # EXPONENTIAL
     lnX <- log(data_x)
@@ -399,6 +462,9 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 
     y_est <- a * data_x^b
     err <- err - y_est
+    predict_func <- function(x_val) {
+      a * x_val^b
+    }
   } else if (fitting == "i") {
     # Hyperbolic aka inverse
     model <- lm(1 / data_y ~ data_x)
@@ -413,6 +479,9 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 
     y_est <- 1 / (a + b * data_x)
     err <- err - y_est
+    predict_func <- function(x_val) {
+      1 / (a + b * x_val)
+    }
   } else if (fitting == "q") {
     # QUADRATIC
     data_x2 <- data_x^2
@@ -430,6 +499,9 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 
     y_est <- a * (data_x2) + (b * data_x) + c
     err <- err - y_est
+    predict_func <- function(x_val) {
+      a * (x_val^2) + (b * x_val) + c
+    }
   } else if (fitting == "t") {
     # TRIGONOMETRIC
     model <- lm(data_y ~ 0 + sin(data_x) + cos(data_x))
@@ -444,6 +516,9 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 
     y_est <- a * sin(data_x) + b * cos(data_x)
     err <- err - y_est
+    predict_func <- function(x_val) {
+      a * sin(x_val) + b * cos(x_val)
+    }
   }
 
   # calculation of final variables
@@ -457,7 +532,8 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
     "VarianceY" = var_y,
     "R2" = r2,
     "Plot" = p,
-    "Curve" = curve
+    "Curve" = curve,
+    "Predict" = predict_func
   )
   result
 }

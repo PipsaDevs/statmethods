@@ -71,6 +71,46 @@ pipsa_regression_line_from_model <- function(model, y_on_x = TRUE) {
   # alias function
   pipsa_obtain_function_from_model(model, y_on_x)
 }
+
+#' Plot function from model
+#'
+#' Gets a model and plots the function
+#'
+#' @param model A model (obtained from lm())
+#' @param col The color of the line. Default: "red"
+#' @param lineWidth The width of the line. Default: 2
+#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @return The representation of the function in a plot
+#' @examples
+#' pipsa_plot_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)), "red", 2)
+#' @export
+pipsa_plot_from_model <- function(model, col = "red", lineWidth = 2, y_on_x = TRUE) {
+  coef <- coef(model)
+
+  if (y_on_x == TRUE) {
+    abline(a = coef[1], b = coef[2], col = col, lwd = lineWidth)
+  } else {
+    abline(a = -coef[1] / coef[2], b = 1 / coef[2], col = col, lwd = lineWidth)
+  }
+}
+
+#' Plot point
+#'
+#' Gets coordinates for a point and plots it
+#'
+#' @param x x coordinate
+#' @param y y coordinate
+#' @param color The color of the point
+#' @param pch The "shape" of the point
+#' @param cex The "thickness" of the point
+#' @return The point plotted on the plot
+#' @examples
+#' pipsa_plot_point(2, 3, 19, 1.5)
+#' @export
+pipsa_plot_point <- function(x, y, color = "black", pch = 19, cex = 1.5) {
+  points(x, y, col = color, pch = pch, cex = cex)
+}
+
 # ========================================================================
 
 #' Moving Average of a Time Series
