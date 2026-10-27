@@ -658,3 +658,34 @@ pipsa_plane_fit <- function(x, y, z) {
   )
   result
 }
+
+pipsa_compare_models <- function(x, y) {
+  keys <- c("l", "lo", "e", "p", "i", "q", "t")
+
+  results <- data.frame(Model = character(), R2 = numeric(), MSE = numeric())
+
+  models <- list()
+
+  for (k in keys) {
+    fit <- pipsa_model_func(x, y, k)
+    models[[k]] <- fit
+    results <- rbind(result, data.frame(k, fit$R2, fit$mse))
+  }
+  results <- results[order(-results$R2, results$MSE), ]
+
+  cat("\n--- MODEL COMPARISON ---\n")
+  print(results, row.names = FALSE)
+  cat("------------------------\n")
+
+  best_key <- results$Model[1]
+  best_model <- models[[best_key]]
+
+  cat("BEST MODEL:", best_key, "\n")
+
+  if (!is.null(x_predict)) {
+    pred <- best_model$Predict(x_predict)
+    cat("PREDICTION for X =", x_predict, "-> Y =", round(pred, 5), "\n")
+  }
+
+  invisible(list(table = results, best_model = best_model))
+}
