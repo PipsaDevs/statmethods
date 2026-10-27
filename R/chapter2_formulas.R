@@ -395,29 +395,26 @@ pipsa_mom_cent <- function(values, r, s) {
 #' @param fitting Character specifying model type:
 #'   - "l": Linear (y = a + bx)
 #'   - "lo": Logarithmic (y = a + b * ln(x))
-#'   - "e": Exponential (y = a * x^b)
+#'   - "e": Exponential (y = a * e^(bx))
+#'   - "p": Power (y = a * x^b)
 #'   - "i": Hyperbolic/Inverse (y = 1 / (a + bx))
 #'   - "q": Quadratic (y = ax^2 + bx + c)
-#'   - "t": Trigonometric (y = a·sin(x) + b·cos(x))
+#'   - "t": Trigonometric (y = a * sin(x) + b * cos(x))
 #' @return A named list: Model, mse, VarianceY, R2, Plot, Curve, Predict (function).
 #' @examples
 #' x <- c(1, 2, 3, 4, 5)
 #' y <- c(2, 4, 5, 8, 10)
-#' res <- pipsa_model_func(x, y, fitting = "l")
+#' res <- pipsa_model_func(x, y, fitting = "e")
 #' res$Predict(20)
 #' @export
 pipsa_model_func <- function(data_x, data_y, fitting) {
   n <- length(data_y)
   err <- data_y
 
-  # preparing graphical info
-  p <- plot(data_x, data_y)
-  curve <- NULL
+  plot(data_x, data_y, main = paste("Curve Fitting:", toupper(fitting)), pch = 16)
+  curve_obj <- NULL
   predict_func <- NULL
 
-  # the function must perform different
-  # operations depending on the type of fitting specified,
-  # but it mostly follows the same steps for each type
   if (fitting == "l") {
     # LINEAR
     model <- lm(data_y ~ data_x)
@@ -425,9 +422,9 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
     a <- coef(model)[1]
     b <- coef(model)[2]
 
-    curve <- curve(
+    curve_obj <- curve(
       (a + b * x),
-      from = min(data_x), to = max(data_x), col = "blue", add = TRUE
+      from = min(data_x), to = max(data_x), col = "blue", add = TRUE, lwd = 2
     )
 
     y_est <- a + b * data_x
@@ -442,9 +439,9 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
     a <- coef(model)[1]
     b <- coef(model)[2]
 
-    curve <- curve(
+    curve_obj <- curve(
       (a + b * log(x)),
-      from = min(data_x), to = max(data_x), col = "orange", add = TRUE
+      from = min(data_x), to = max(data_x), col = "orange", add = TRUE, lwd = 2
     )
 
     y_est <- a + b * log(data_x)
@@ -453,18 +450,37 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
       a + b * log(x_val)
     }
   } else if (fitting == "e") {
-    # EXPONENTIAL
+    # EXPONENTIAL (y = a * e^(bx))
+    lnY <- log(data_y)
+
+    model <- lm(lnY ~ data_x)
+
+    a <- exp(coef(model)[1])
+    b <- coef(model)[2]
+
+    curve_obj <- curve(
+      (a * exp(b * x)),
+      from = min(data_x), to = max(data_x), col = "green", add = TRUE, lwd = 2
+    )
+
+    y_est <- a * exp(b * data_x)
+    err <- err - y_est
+    predict_func <- function(x_val) {
+      a * exp(b * x_val)
+    }
+  } else if (fitting == "p") {
+    # POWER (y = a * x^b)
     lnX <- log(data_x)
     lnY <- log(data_y)
 
     model <- lm(lnY ~ lnX)
 
-    a <- exp(coef(model))[1]
+    a <- exp(coef(model)[1])
     b <- coef(model)[2]
 
-    curve <- curve(
+    curve_obj <- curve(
       (a * x^b),
-      from = min(data_x), to = max(data_x), col = "green", add = TRUE
+      from = min(data_x), to = max(data_x), col = "cyan", add = TRUE, lwd = 2
     )
 
     y_est <- a * data_x^b
@@ -473,15 +489,15 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
       a * x_val^b
     }
   } else if (fitting == "i") {
-    # Hyperbolic aka inverse
+    # HYPERBOLIC / INVERSE
     model <- lm(1 / data_y ~ data_x)
 
     a <- coef(model)[1]
     b <- coef(model)[2]
 
-    curve <- curve(
+    curve_obj <- curve(
       (1 / (a + b * x)),
-      from = min(data_x), to = max(data_x), col = "red", add = TRUE
+      from = min(data_x), to = max(data_x), col = "red", add = TRUE, lwd = 2
     )
 
     y_est <- 1 / (a + b * data_x)
@@ -495,13 +511,13 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 
     model <- lm(data_y ~ data_x + data_x2)
 
-    a <- coef(model)[3]
-    b <- coef(model)[2]
     c <- coef(model)[1]
+    b <- coef(model)[2]
+    a <- coef(model)[3]
 
-    curve <- curve(
+    curve_obj <- curve(
       (a * (x^2) + (b * x) + c),
-      from = min(data_x), to = max(data_x), col = "black", add = TRUE
+      from = min(data_x), to = max(data_x), col = "black", add = TRUE, lwd = 2
     )
 
     y_est <- a * (data_x2) + (b * data_x) + c
@@ -510,28 +526,34 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
       a * (x_val^2) + (b * x_val) + c
     }
   } else if (fitting == "t") {
-    # TRIGONOMETRIC
-    model <- lm(data_y ~ 0 + sin(data_x) + cos(data_x))
+    # TRIGONOMETRIC (Added intercept 'c' for baseline shift)
+    model <- lm(data_y ~ sin(data_x) + cos(data_x))
 
-    a <- coef(model)[1]
-    b <- coef(model)[2]
+    c <- coef(model)[1]
+    a <- coef(model)[2]
+    b <- coef(model)[3]
 
-    curve <- curve(
-      (a * sin(x) + b * cos(x)),
-      from = min(data_x), to = max(data_x), col = "purple", add = TRUE
+    curve_obj <- curve(
+      (c + a * sin(x) + b * cos(x)),
+      from = min(data_x), to = max(data_x), col = "purple", add = TRUE, lwd = 2
     )
 
-    y_est <- a * sin(data_x) + b * cos(data_x)
+    y_est <- c + a * sin(data_x) + b * cos(data_x)
     err <- err - y_est
     predict_func <- function(x_val) {
-      a * sin(x_val) + b * cos(x_val)
+      c + a * sin(x_val) + b * cos(x_val)
     }
   }
 
-  # calculation of final variables
+  # 3. Save the Plot properly using recordPlot()
+  p <- recordPlot()
+
+  # Calculation of final variables
   mse <- mean(err^2)
   var_y <- var(data_y) * (n - 1) / n
-  r2 <- 1 - (mse / var_y)
+
+  # Prevent division by zero if all Y values are identical
+  r2 <- if (var_y == 0) NA else 1 - (mse / var_y)
 
   result <- list(
     "Model" = model,
@@ -539,12 +561,12 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
     "VarianceY" = var_y,
     "R2" = r2,
     "Plot" = p,
-    "Curve" = curve,
+    "Curve" = curve_obj,
     "Predict" = predict_func
   )
+
   result
 }
-
 #' Obtain spearman correlation
 #'
 #' Obtains spearman correlation from 2 vectors
@@ -599,7 +621,7 @@ pipsa_contingency_coef <- function(tbl) {
 #' @param x Numeric vector for independent variable X.
 #' @param y Numeric vector for independent variable Y.
 #' @param z Numeric vector for dependent variable Z.
-#' @return A named list: Model, SSE, ResidualVariance, R2, Predict (function), and optionally Prediction.
+#' @return A named list: Model, SSE, ResidualVariance, R2, Predict (function).
 #' @examples
 #' x <- c(0, 1, 0, -1, 0, 1, 1, 2)
 #' y <- c(0, 1, 1, 1, 3, 2, 2, 0)
@@ -635,6 +657,44 @@ pipsa_plane_fit <- function(x, y, z) {
     "Predict" = predict_func
   )
   result
+}
+
+#' Compare Regression Models
+#'
+#' Fits all seven models, ranks them by highest R2 (then lowest MSE),
+#' and optionally predicts a value using the best fit.
+#'
+#' @param x Numeric vector for independent variable X.
+#' @param y Numeric vector for dependent variable Y.
+#' @return Returns the results table, the winning model and the models list.
+#' @export
+pipsa_compare_models <- function(x, y) {
+  keys <- c("l", "lo", "e", "p", "i", "q", "t")
+
+  results <- data.frame(Model = character(), R2 = numeric(), MSE = numeric())
+
+  models <- list()
+
+  for (k in keys) {
+    fit <- tryCatch(suppressWarnings(pipsa_model_func(x, y, fitting = k)),
+      error = function(e) NULL
+    )
+
+    if (!is.null(fit)) {
+      models[[k]] <- fit
+      results <- rbind(results, data.frame(Model = k, R2 = fit$R2, MSE = fit$mse))
+    }
+  }
+  results <- results[order(-results$R2, results$MSE), ]
+
+  cat("\n--- MODEL COMPARISON ---\n")
+  print(results, row.names = FALSE)
+  cat("------------------------\n")
+
+  best_key <- results$Model[1]
+  best_model <- models[[best_key]]
+
+  list(table = results, best_model = best_model, models = models)
 }
 
 #' Regression validity

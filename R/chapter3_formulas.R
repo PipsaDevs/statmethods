@@ -32,7 +32,8 @@ pipsa_print <- function(x, string = "", round = 5, reverse = FALSE) {
 #' in the form "intercept + slope * x".
 #'
 #' @param model A model (obtained from lm())
-#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @param y_on_x A boolean to determine whether
+#' the model is y on x or x on y. Default: TRUE (meaning it's y on x)
 #' @return A string representation of the linear function.
 #' @examples
 #' pipsa_obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
@@ -62,7 +63,8 @@ pipsa_obtain_function_from_model <- function(model, y_on_x = TRUE) {
 #' in the form "intercept + slope * x".
 #'
 #' @param model A model (obtained from lm())
-#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @param y_on_x A boolean to determine whether
+#' the model is y on x or x on y. Default: TRUE (meaning it's y on x)
 #' @return A string representation of the linear function.
 #' @examples
 #' pipsa_regression_line_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
@@ -78,19 +80,25 @@ pipsa_regression_line_from_model <- function(model, y_on_x = TRUE) {
 #'
 #' @param model A model (obtained from lm())
 #' @param col The color of the line. Default: "red"
-#' @param lineWidth The width of the line. Default: 2
-#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @param line_width The width of the line. Default: 2
+#' @param y_on_x A boolean to determine whether
+#' the model is y on x or x on y. Default: TRUE (meaning it's y on x)
 #' @return The representation of the function in a plot
 #' @examples
 #' pipsa_plot_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)), "red", 2)
 #' @export
-pipsa_plot_from_model <- function(model, col = "red", lineWidth = 2, y_on_x = TRUE) {
+pipsa_plot_from_model <- function(
+  model,
+  col = "red",
+  line_width = 2,
+  y_on_x = TRUE
+) {
   coef <- coef(model)
 
   if (y_on_x == TRUE) {
-    abline(a = coef[1], b = coef[2], col = col, lwd = lineWidth)
+    abline(a = coef[1], b = coef[2], col = col, lwd = line_width)
   } else {
-    abline(a = -coef[1] / coef[2], b = 1 / coef[2], col = col, lwd = lineWidth)
+    abline(a = -coef[1] / coef[2], b = 1 / coef[2], col = col, lwd = line_width)
   }
 }
 
