@@ -225,7 +225,8 @@ pipsa_time_series <- function(data_array, initial_year, freq) {
     trend = trend,
     seasonal_indices = seasonal_indices,
     deseasonalized_data = deseasonalized_data,
-    trend_model = trend_model
+    trend_model = trend_model,
+    random_component = random_component
   )
 }
 #' auto_correlation for a Specific Lag
