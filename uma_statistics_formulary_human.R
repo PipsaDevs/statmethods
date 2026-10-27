@@ -1469,20 +1469,21 @@ compare_models <- function(x, y, x_predict = NULL) {
 # MATHEMATICAL INTUITION & UMA FORMULA:
 #   In a histogram the AREA of each bar is the frequency:
 #       n_i = h_i * a_i        (height h_i = density, width a_i)
-#   If the heights are only proportional and the total N is known, rescale:
+#   If the heights are only proportional and the total N is known, rescale
+#   so that the areas add up to N:
 #       n_i = h_i * a_i * N / sum(h_i * a_i)
 #   Then f_i = n_i / N and N_i, F_i are the cumulative columns.
 # INPUTS & OUTPUTS:
 #   h_i : bar heights.  a_i : class widths.  N : optional total.
-#   Returns data.frame with h_i, a_i, n_i, f_i, N_i, F_i.
+#   Returns data.frame with columns h_i, a_i, n_i, f_i, N_i, F_i.
 # DEPENDENCIES: none.
 # ---------------------------------------------------------------------
 reconstruct_histogram <- function(h_i, a_i, N = NULL) {
-  # Step 1: Absolute frequencies = area of each bar
+  # Step 1: Absolute frequency = area of each bar
   ni <- h_i * a_i
-  # Step 2: Rescale so that the frequencies add up to N (if N is known)
+  # Step 2: Rescale so the frequencies add up to N (only if N is given)
   if (!is.null(N)) ni <- ni * N / sum(ni)
-  # Step 3: Relative and cumulative frequencies
+  # Step 3: Total, relative and cumulative frequencies
   total <- sum(ni)
   table_result <- data.frame(h_i = h_i, a_i = a_i, n_i = ni, f_i = ni / total,
                              N_i = cumsum(ni), F_i = cumsum(ni) / total)
@@ -1491,39 +1492,74 @@ reconstruct_histogram <- function(h_i, a_i, N = NULL) {
 
 
 # ---------------------------------------------------------------------
-# [ALGEBRA-TWO-OBSERVATIONS]  deduce_sample_two_obs(mean_val, sd_val, quasi = FALSE)
+# [ALGEBRA-TWO-OBSERVATIONS]  deduce_sample_two_obs(mean_val, sd_val)
 # MATHEMATICAL INTUITION & UMA FORMULA:
 #   Sample of N = 2 observations x1, x2:
 #       mean = (x1 + x2) / 2
-#       s_n^2 = ((x1 - mean)^2 + (x2 - mean)^2) / 2 = ((x2 - x1) / 2)^2
-#   so the two data are symmetric around the mean:
-#       x1, x2 = mean_val -/+ sd_val        (sd_val = s_n, divides by N)
-#   If the given sd is the QUASI-standard deviation (divides by N - 1 = 1)
-#   then s^2 = 2 * s_n^2 and  x1, x2 = mean_val -/+ s / sqrt(2)  (quasi = TRUE).
+#       var  = ((x1 - mean)^2 + (x2 - mean)^2) / 2 = ((x2 - x1) / 2)^2
+#   so the two data are symmetric around the mean and each one is exactly
+#   one standard deviation away from it:
+#       x1, x2 = mean_val -/+ sd_val        (sd divides by N, UMA rule)
+#   If the exam gives the QUASI-standard deviation s (divides by N - 1 = 1),
+#   first convert it: sd_val = s / sqrt(2).
 # INPUTS & OUTPUTS:
-#   mean_val : mean.  sd_val : standard deviation.  quasi : TRUE if the
-#   standard deviation divides by N - 1.  Returns c(x1, x2), x1 <= x2.
+#   mean_val : mean.  sd_val : standard deviation (divides by N).
+#   Returns the vector c(x1, x2) with x1 <= x2.
 # DEPENDENCIES: none.
 # ---------------------------------------------------------------------
-deduce_sample_two_obs <- function(mean_val, sd_val, quasi = FALSE) {
-  # Step 1: Distance from the mean to each observation
-  distance <- if (quasi) sd_val / sqrt(2) else sd_val
-  # Step 2: The two observations are symmetric around the mean
-  observations <- c(mean_val - distance, mean_val + distance)
-  return(observations)
+deduce_sample_two_obs <- function(mean_val, sd_val) {
+  # Step 1: Smaller observation = mean - sd
+  x1 <- mean_val - sd_val
+  # Step 2: Larger observation = mean + sd
+  x2 <- mean_val + sd_val
+  return(c(x1, x2))
+}
+
+
+# ---------------------------------------------------------------------
+# [ALGEBRA-THREE-OBSERVATIONS]  deduce_sample_three_obs(mean_val, var_val, x1)
+# MATHEMATICAL INTUITION & UMA FORMULA:
+#   Sample of N = 3 observations x1, x2, x3 with known mean, variance
+#   (divides by N) and one datum x1. Two unknowns, two equations:
+#       sum x   = 3 * mean            ->  S = x2 + x3   = 3*mean - x1
+#       sum x^2 = 3 * (var + mean^2)  ->  Q = x2^2 + x3^2 = 3*(var + mean^2) - x1^2
+#   From (x2 + x3)^2 = x2^2 + x3^2 + 2*x2*x3 we get the product:
+#       P = x2 * x3 = (S^2 - Q) / 2
+#   so x2 and x3 are the two roots of the quadratic  u^2 - S*u + P = 0:
+#       u = (S -/+ sqrt(S^2 - 4*P)) / 2
+#   If the exam gives the quasi-variance, first use var = quasi_var * 2 / 3.
+#   If S^2 - 4*P < 0 there is no real solution (R returns NaN).
+# INPUTS & OUTPUTS:
+#   mean_val : mean.  var_val : variance (divides by N).  x1 : known datum.
+#   Returns the named vector c(x1, x2, x3) with x2 <= x3.
+# DEPENDENCIES: none.
+# ---------------------------------------------------------------------
+deduce_sample_three_obs <- function(mean_val, var_val, x1) {
+  # Step 1: Sum S and sum of squares Q of the two unknown data
+  sum_x2_x3 <- 3 * mean_val - x1
+  sum_sq_x2_x3 <- 3 * (var_val + mean_val^2) - x1^2
+  # Step 2: Product P = x2 * x3
+  product <- (sum_x2_x3^2 - sum_sq_x2_x3) / 2
+  # Step 3: Roots of u^2 - S*u + P = 0
+  discriminant <- sum_x2_x3^2 - 4 * product
+  x2 <- (sum_x2_x3 - sqrt(discriminant)) / 2
+  x3 <- (sum_x2_x3 + sqrt(discriminant)) / 2
+  return(c(x1 = x1, x2 = x2, x3 = x3))
 }
 
 
 # ---------------------------------------------------------------------
 # [ALGEBRA-REGRESSION-LINES]  identify_regression_lines(line1_coefs, line2_coefs)
 # MATHEMATICAL INTUITION & UMA FORMULA:
-#   Two regression lines are given as  A*x + B*y = C  ->  c(A, B, C).
-#   One is Y on X (y = a + b_yx*x), the other is X on Y (x = a' + b_xy*y).
+#   Each line is typed as  A*x + B*y = C  ->  c(A, B, C).
+#   Example: y = 2 + 3x  is  -3x + 1y = 2  ->  c(-3, 1, 2).
+#   One line is R(Y/X): y = a + b_yx * x   and the other is R(X/Y): x = a' + b_xy * y.
 #   If line 1 is Y/X and line 2 is X/Y:
 #       b_yx = -A1 / B1        b_xy = -B2 / A2        r^2 = b_yx * b_xy
-#   The right assignment gives r^2 <= 1 (the wrong one gives 1 / r^2 > 1).
+#   Since r^2 <= 1, the right assignment gives r^2 <= 1; the wrong one gives
+#   1 / r^2 > 1, so we swap the roles. The sign of r is the sign of the slopes.
 #   Both lines cross at the CENTRE OF GRAVITY (mean_x, mean_y): solve the
-#   2x2 system. The sign of r is the sign of the slopes.
+#   2x2 system  A1*x + B1*y = C1,  A2*x + B2*y = C2.
 # INPUTS & OUTPUTS:
 #   line1_coefs, line2_coefs : c(A, B, C) of each line.
 #   Returns list(Y_on_X_line (1 or 2), X_on_Y_line, slope_Y_on_X,
@@ -1532,21 +1568,21 @@ deduce_sample_two_obs <- function(mean_val, sd_val, quasi = FALSE) {
 # DEPENDENCIES: none.
 # ---------------------------------------------------------------------
 identify_regression_lines <- function(line1_coefs, line2_coefs) {
-  # Step 1: Assume line 1 is Y/X and line 2 is X/Y
+  # Step 1: Assume line 1 is Y/X and line 2 is X/Y, and compute r^2
   y_on_x <- line1_coefs
   x_on_y <- line2_coefs
   y_on_x_line <- 1
-  r2 <- (-y_on_x[1] / y_on_x[2]) * (-x_on_y[2] / x_on_y[1])
-  # Step 2: r^2 cannot be bigger than 1: if it is, swap the roles
-  if (r2 > 1 + 1e-9) {
+  r2 <- (y_on_x[1] / y_on_x[2]) * (x_on_y[2] / x_on_y[1])
+  # Step 2: r^2 cannot be above 1, so if it is, the roles are swapped
+  if (r2 > 1) {
     y_on_x <- line2_coefs
     x_on_y <- line1_coefs
     y_on_x_line <- 2
   }
-  # Step 3: Slopes, r^2 and r (with the sign of the slopes)
+  # Step 3: Slopes, r^2 and r (r has the sign of the slopes)
   b_yx <- -y_on_x[1] / y_on_x[2]
   b_xy <- -x_on_y[2] / x_on_y[1]
-  r2 <- min(b_yx * b_xy, 1)
+  r2 <- b_yx * b_xy
   # Step 4: Centre of gravity = crossing point of the two lines
   center <- solve(rbind(line1_coefs[1:2], line2_coefs[1:2]), c(line1_coefs[3], line2_coefs[3]))
   return(list(Y_on_X_line = y_on_x_line, X_on_Y_line = 3 - y_on_x_line,
@@ -1555,6 +1591,210 @@ identify_regression_lines <- function(line1_coefs, line2_coefs) {
               mean_x = center[[1]], mean_y = center[[2]], r2 = r2, r = sign(b_yx) * sqrt(r2)))
 }
 
+
+# ---------------------------------------------------------------------
+# [ALGEBRA-COMBINED-SAMPLE]  combined_mean_variance(n1, mean1, var1, n2, mean2, var2)
+# MATHEMATICAL INTUITION & UMA FORMULA:
+#   Two groups (sizes n1, n2) are joined in one sample of N = n1 + n2:
+#       global mean   = (n1*mean1 + n2*mean2) / N
+#       var_intra     = (n1*var1 + n2*var2) / N               (inside the groups)
+#       var_inter     = (n1*(mean1 - mean_g)^2 + n2*(mean2 - mean_g)^2) / N
+#                                                              (between the groups)
+#       var_global    = var_intra + var_inter
+#   Why it works: the total variability = average variability inside each
+#   group + variability of the group means around the global mean.
+#   All variances divide by N (UMA rule).
+# INPUTS & OUTPUTS:
+#   n1, mean1, var1 : size, mean and variance of group 1.
+#   n2, mean2, var2 : size, mean and variance of group 2.
+#   Returns list(N, mean_global, var_intra, var_inter, var_global, sd_global).
+# DEPENDENCIES: none.
+# ---------------------------------------------------------------------
+combined_mean_variance <- function(n1, mean1, var1, n2, mean2, var2) {
+  # Step 1: Total size and global mean
+  N <- n1 + n2
+  mean_global <- (n1 * mean1 + n2 * mean2) / N
+  # Step 2: Variance inside the groups (intra)
+  var_intra <- (n1 * var1 + n2 * var2) / N
+  # Step 3: Variance between the groups (inter)
+  var_inter <- (n1 * (mean1 - mean_global)^2 + n2 * (mean2 - mean_global)^2) / N
+  # Step 4: Global variance = intra + inter
+  var_global <- var_intra + var_inter
+  return(list(N = N, mean_global = mean_global, var_intra = var_intra,
+              var_inter = var_inter, var_global = var_global, sd_global = sqrt(var_global)))
+}
+
+
+# ---------------------------------------------------------------------
+# [ALGEBRA-CORRECT-DATA]  correct_erroneous_data(N, mean_old, var_old, x_old, x_new = NULL)
+# MATHEMATICAL INTUITION & UMA FORMULA:
+#   The mean and variance of the wrong sample let us rebuild the two sums:
+#       sum x   = N * mean_old
+#       sum x^2 = N * (var_old + mean_old^2)
+#   Replace the wrong value x_old by the right one x_new:
+#       sum x_new   = sum x   - x_old   + x_new
+#       sum x^2_new = sum x^2 - x_old^2 + x_new^2          (N does not change)
+#   If x_old must only be REMOVED (x_new = NULL) nothing is added and N_new = N - 1.
+#   Then:  mean_new = sum x_new / N_new
+#          var_new  = sum x^2_new / N_new - mean_new^2
+#   var_old divides by N. If the exam gives the quasi-variance, first use
+#   var_old = quasi_var * (N - 1) / N.
+# INPUTS & OUTPUTS:
+#   N : size of the wrong sample.  mean_old, var_old : its mean and variance.
+#   x_old : the erroneous value.  x_new : the right value (NULL = remove x_old).
+#   Returns list(N_new, sum_x_old, sum_x2_old, sum_x_new, sum_x2_new,
+#   mean_new, var_new, sd_new).
+# DEPENDENCIES: none.
+# ---------------------------------------------------------------------
+correct_erroneous_data <- function(N, mean_old, var_old, x_old, x_new = NULL) {
+  # Step 1: Rebuild sum(x) and sum(x^2) of the wrong sample
+  sum_x_old <- N * mean_old
+  sum_x2_old <- N * (var_old + mean_old^2)
+  # Step 2: New size and value added (nothing is added if we only remove x_old)
+  N_new <- if (is.null(x_new)) N - 1 else N
+  added <- if (is.null(x_new)) 0 else x_new
+  # Step 3: Take out x_old and put in x_new in both sums
+  sum_x_new <- sum_x_old - x_old + added
+  sum_x2_new <- sum_x2_old - x_old^2 + added^2
+  # Step 4: Corrected mean and variance
+  mean_new <- sum_x_new / N_new
+  var_new <- sum_x2_new / N_new - mean_new^2
+  return(list(N_new = N_new, sum_x_old = sum_x_old, sum_x2_old = sum_x2_old,
+              sum_x_new = sum_x_new, sum_x2_new = sum_x2_new,
+              mean_new = mean_new, var_new = var_new, sd_new = sqrt(var_new)))
+}
+
+
+# ---------------------------------------------------------------------
+# [ALGEBRA-THRESHOLD-PROPORTION]  proportion_above_threshold(L_inf, L_sup, ni, threshold)
+# MATHEMATICAL INTUITION & UMA FORMULA:
+#   Data grouped in classes [L_(i-1), L_i). Inside each class the data are
+#   assumed UNIFORMLY spread, so the part of the class above the threshold t
+#   is proportional to the length above t:
+#       share_i = (L_i - t) / a_i       (a_i = L_i - L_(i-1))
+#   share_i = 1 if the whole class is above t and 0 if it is all below t.
+#       n_above = sum(n_i * share_i)
+#       proportion = n_above / N        percentage = 100 * proportion
+#   For the part BELOW the threshold use 1 - proportion.
+# INPUTS & OUTPUTS:
+#   L_inf, L_sup : lower and upper class limits.  ni : class frequencies.
+#   threshold : the value t.
+#   Returns list(N, n_above, proportion, percentage).
+# DEPENDENCIES: none.
+# ---------------------------------------------------------------------
+proportion_above_threshold <- function(L_inf, L_sup, ni, threshold) {
+  # Step 1: Class widths and total N
+  widths <- L_sup - L_inf
+  N <- sum(ni)
+  # Step 2: Share of each class above the threshold (between 0 and 1)
+  share_above <- pmin(pmax((L_sup - threshold) / widths, 0), 1)
+  # Step 3: Number and proportion of data above the threshold
+  n_above <- sum(ni * share_above)
+  proportion <- n_above / N
+  return(list(N = N, n_above = n_above, proportion = proportion, percentage = 100 * proportion))
+}
+
+
+# ---------------------------------------------------------------------
+# [ALGEBRA-ANOVA-VARIANCE]  variance_decomposition_regression(var_y, r2_or_mse, is_r2 = TRUE)
+# MATHEMATICAL INTUITION & UMA FORMULA:
+#   In a regression the total variance of Y splits in two parts:
+#       var_y = var_explained + var_residual
+#       var_explained = R^2 * var_y          (what the model explains)
+#       var_residual  = MSE = (1 - R^2) * var_y   (what it does not explain)
+#   so  R^2 = var_explained / var_y = 1 - MSE / var_y.
+#   If you know R^2 (is_r2 = TRUE) you get the MSE; if you know the MSE
+#   (is_r2 = FALSE) you get R^2 and the explained variance.
+#   Variances divide by N (UMA rule).
+# INPUTS & OUTPUTS:
+#   var_y : total variance of Y.  r2_or_mse : R^2 or MSE depending on is_r2.
+#   is_r2 : TRUE if the second argument is R^2, FALSE if it is the MSE.
+#   Returns list(var_y, var_explained, var_residual, r2).
+# DEPENDENCIES: none.
+# ---------------------------------------------------------------------
+variance_decomposition_regression <- function(var_y, r2_or_mse, is_r2 = TRUE) {
+  # Step 1: Get R^2 (from the MSE if that is what we were given)
+  r2 <- if (is_r2) r2_or_mse else 1 - r2_or_mse / var_y
+  # Step 2: Explained variance = R^2 * var_y
+  var_explained <- r2 * var_y
+  # Step 3: Residual variance (MSE) = what is left of the total variance
+  var_residual <- var_y - var_explained
+  return(list(var_y = var_y, var_explained = var_explained, var_residual = var_residual, r2 = r2))
+}
+
+
+# ---------------------------------------------------------------------
+# [ALGEBRA-TRANSFORM-REGRESSION]  transform_regression_coefficients(a_old, b_old, cx, dx, cy, dy)
+# MATHEMATICAL INTUITION & UMA FORMULA:
+#   Original line  Y = a + b*X.  New variables  X' = cx*X + dx,  Y' = cy*Y + dy.
+#   Isolate  X = (X' - dx) / cx  and  Y = (Y' - dy) / cy  and substitute:
+#       (Y' - dy) / cy = a + b * (X' - dx) / cx
+#   Solving for Y' gives the new line  Y' = a' + b' * X'  with
+#       b' = b * cy / cx
+#       a' = cy * a + dy - b' * dx
+#   Changing the origin (dx, dy) only moves the intercept; changing the
+#   scale (cx, cy) also changes the slope.
+# INPUTS & OUTPUTS:
+#   a_old, b_old : intercept and slope of Y on X.
+#   cx, dx : X' = cx*X + dx.   cy, dy : Y' = cy*Y + dy.
+#   Returns list(a_new, b_new).
+# DEPENDENCIES: none.
+# ---------------------------------------------------------------------
+transform_regression_coefficients <- function(a_old, b_old, cx, dx, cy, dy) {
+  # Step 1: New slope b' = b * cy / cx
+  b_new <- b_old * cy / cx
+  # Step 2: New intercept a' = cy * a + dy - b' * dx
+  a_new <- cy * a_old + dy - b_new * dx
+  return(list(a_new = a_new, b_new = b_new))
+}
+
+
+# ---------------------------------------------------------------------
+# [ALGEBRA-CONTINGENCY-INDEPENDENCE]  reconstruct_contingency_independence(row_totals, col_totals)
+# MATHEMATICAL INTUITION & UMA FORMULA:
+#   If X and Y are independent, the joint relative frequency is the product
+#   of the marginal ones: f_ij = f_i. * f_.j. Multiplying by N:
+#       e_ij = (row_total_i * col_total_j) / N
+#   with N = sum(row_totals) = sum(col_totals) (both sums must be equal).
+#   This is the table of EXPECTED frequencies under independence.
+#   With a real table use row_totals = rowSums(table), col_totals = colSums(table).
+# INPUTS & OUTPUTS:
+#   row_totals : marginal totals of X (rows).  col_totals : marginal totals of Y (columns).
+#   Returns the matrix of expected frequencies e_ij (rows = X, columns = Y).
+# DEPENDENCIES: none.
+# ---------------------------------------------------------------------
+reconstruct_contingency_independence <- function(row_totals, col_totals) {
+  # Step 1: Total number of data
+  N <- sum(row_totals)
+  # Step 2: e_ij = row_total_i * col_total_j / N for every cell
+  expected <- outer(row_totals, col_totals) / N
+  return(expected)
+}
+
+
+# ---------------------------------------------------------------------
+# [ALGEBRA-FIND-LINEAR-TRANSFORM]  deduce_linear_transform_params(mean_x, sd_x, mean_y, sd_y)
+# MATHEMATICAL INTUITION & UMA FORMULA:
+#   If Y = a*X + b, the mean and the standard deviation transform as:
+#       mean_y = a * mean_x + b
+#       sd_y   = |a| * sd_x
+#   Taking a > 0 (the usual case; if the exam says Y is a decreasing
+#   function of X, change the sign of a):
+#       a = sd_y / sd_x
+#       b = mean_y - a * mean_x
+# INPUTS & OUTPUTS:
+#   mean_x, sd_x : mean and standard deviation of X.
+#   mean_y, sd_y : mean and standard deviation of Y.
+#   Returns list(a, b) for Y = a*X + b.
+# DEPENDENCIES: none.
+# ---------------------------------------------------------------------
+deduce_linear_transform_params <- function(mean_x, sd_x, mean_y, sd_y) {
+  # Step 1: Slope a = sd_y / sd_x
+  a <- sd_y / sd_x
+  # Step 2: Intercept b = mean_y - a * mean_x
+  b <- mean_y - a * mean_x
+  return(list(a = a, b = b))
+}
 
 # =====================================================================
 # BLOCK 4: TIME SERIES & INDEXES (CHAPTER 3)
