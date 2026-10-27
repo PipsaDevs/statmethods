@@ -636,3 +636,20 @@ pipsa_plane_fit <- function(x, y, z) {
   )
   result
 }
+
+#' Regression validity
+#'
+#' Check the validity of 2 regression slopes (Reference: Exercise 10)
+#'
+#' @param b_yx Slope of y on x
+#' @param b_xy Slope of x on y
+#' @return Whether the regression lines are valid
+#' @examples
+#' # Suppose you have r_{y/x} === y = 5 + 8x
+#' # and r_{x/y} === y = 3 -2x => x = 3/2 - y/2
+#' pipsa_is_regression_valid(8, -0.5)
+#' @export
+pipsa_is_regression_valid <- function(b_yx, b_xy) {
+  r2 <- b_xy * b_yx
+  (r2 > 0) && (r2 <= 1)
+}
