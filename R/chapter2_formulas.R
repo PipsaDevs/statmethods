@@ -395,15 +395,16 @@ pipsa_mom_cent <- function(values, r, s) {
 #' @param fitting Character specifying model type:
 #'   - "l": Linear (y = a + bx)
 #'   - "lo": Logarithmic (y = a + b * ln(x))
-#'   - "e": Exponential (y = a * x^b)
+#'   - "e": Exponential (y = a * e^(bx))
+#'   - "p": Power (y = a * x^b)
 #'   - "i": Hyperbolic/Inverse (y = 1 / (a + bx))
 #'   - "q": Quadratic (y = ax^2 + bx + c)
-#'   - "t": Trigonometric (y = a·sin(x) + b·cos(x))
+#'   - "t": Trigonometric (y = a * sin(x) + b * cos(x))
 #' @return A named list: Model, mse, VarianceY, R2, Plot, Curve, Predict (function).
 #' @examples
 #' x <- c(1, 2, 3, 4, 5)
 #' y <- c(2, 4, 5, 8, 10)
-#' res <- pipsa_model_func(x, y, fitting = "l")
+#' res <- pipsa_model_func(x, y, fitting = "e")
 #' res$Predict(20)
 #' @export
 pipsa_model_func <- function(data_x, data_y, fitting) {
@@ -453,18 +454,39 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
       a + b * log(x_val)
     }
   } else if (fitting == "e") {
-    # EXPONENTIAL
+    # EXPONENTIAL (y = a * e^(bx))
+    # Linearized form: ln(y) = ln(a) + b*x
+    lnY <- log(data_y)
+
+    model <- lm(lnY ~ data_x) # Notice data_x is NOT logged here
+
+    a <- exp(coef(model)[1])
+    b <- coef(model)[2]
+
+    curve <- curve(
+      (a * exp(b * x)),
+      from = min(data_x), to = max(data_x), col = "green", add = TRUE
+    )
+
+    y_est <- a * exp(b * data_x)
+    err <- err - y_est
+    predict_func <- function(x_val) {
+      a * exp(b * x_val)
+    }
+  } else if (fitting == "p") {
+    # POWER (y = a * x^b)
+    # Linearized form: ln(y) = ln(a) + b*ln(x)
     lnX <- log(data_x)
     lnY <- log(data_y)
 
-    model <- lm(lnY ~ lnX)
+    model <- lm(lnY ~ lnX) # Notice BOTH are logged here
 
-    a <- exp(coef(model))[1]
+    a <- exp(coef(model)[1])
     b <- coef(model)[2]
 
     curve <- curve(
       (a * x^b),
-      from = min(data_x), to = max(data_x), col = "green", add = TRUE
+      from = min(data_x), to = max(data_x), col = "cyan", add = TRUE
     )
 
     y_est <- a * data_x^b
@@ -599,7 +621,7 @@ pipsa_contingency_coef <- function(tbl) {
 #' @param x Numeric vector for independent variable X.
 #' @param y Numeric vector for independent variable Y.
 #' @param z Numeric vector for dependent variable Z.
-#' @return A named list: Model, SSE, ResidualVariance, R2, Predict (function), and optionally Prediction.
+#' @return A named list: Model, SSE, ResidualVariance, R2, Predict (function).
 #' @examples
 #' x <- c(0, 1, 0, -1, 0, 1, 1, 2)
 #' y <- c(0, 1, 1, 1, 3, 2, 2, 0)
