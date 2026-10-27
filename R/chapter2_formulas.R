@@ -173,6 +173,8 @@ pipsa_freq_distribution <- function(x, y) {
 pipsa_table_to_vectors <- function(tbl) {
   df_freq <- as.data.frame(tbl)
 
+  names_tbl <- names(dimnames(tbl))
+
   x_vec <- rep(df_freq[[1]], times = df_freq$Freq)
   y_vec <- rep(df_freq[[2]], times = df_freq$Freq)
 
@@ -183,7 +185,11 @@ pipsa_table_to_vectors <- function(tbl) {
     y_vec <- as.numeric(as.character(y_vec))
   }
 
-  data.frame(x = x_vec, y = y_vec)
+  if (!is.null(names_tbl) && tolower(names_tbl[1]) == "y") {
+    data.frame(x = y_vec, y = x_vec)
+  } else {
+    data.frame(x = x_vec, y = y_vec)
+  }
 }
 
 #' Marginal Distribution of X
@@ -536,4 +542,18 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
     "Predict" = predict_func
   )
   result
+}
+
+#' Obtain spearman correlation
+#'
+#' Obtains spearman correlation from 2 vectors
+#'
+#' @param x A vector for variable X
+#' @param y A vector for variable Y
+#' @return The Spearman correlation
+#' @examples
+#' pipsa_spearman_correlation(c(1, 2, 3), c(4, 5, 6))
+#' @export
+pipsa_spearman_correlation <- function(x, y) {
+  cor.test(x, y, method = "spearman")
 }
