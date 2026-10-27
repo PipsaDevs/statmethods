@@ -36,7 +36,7 @@ pipsa_plot_from_model(res_y_on_x$Model, "blue")
 pipsa_plot_point(mean(x), mean(y)) # They do!
 
 # (f) Expected errors for 10 hours
-pipsa_predict_y(data_x = x, data_y = y, x_val = 10)
+res_y_on_x$Predict(10)
 
 # (g) Expected hours for 13 errors
-pipsa_predict_x(data_x = x, data_y = y, y_val = 13)
+res_x_on_y$Predict(13)
