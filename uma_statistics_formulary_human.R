@@ -38,7 +38,12 @@
 #              [CAP2-REG-POLYNOMIAL] [CAP2-REG-CUSTOM-LINEAR]
 #              [CAP2-REG-PLANE-3D] [CAP2-COMPARE-MODELS]
 #   ALGEBRA  : [ALGEBRA-HISTOGRAM] [ALGEBRA-TWO-OBSERVATIONS]
-#              [ALGEBRA-REGRESSION-LINES]
+#              [ALGEBRA-THREE-OBSERVATIONS] [ALGEBRA-REGRESSION-LINES]
+#              [ALGEBRA-COMBINED-SAMPLE] [ALGEBRA-CORRECT-DATA]
+#              [ALGEBRA-THRESHOLD-PROPORTION] [ALGEBRA-ANOVA-VARIANCE]
+#              [ALGEBRA-TRANSFORM-REGRESSION]
+#              [ALGEBRA-CONTINGENCY-INDEPENDENCE]
+#              [ALGEBRA-FIND-LINEAR-TRANSFORM]
 #   CHAPTER 3: [CAP3-TS-CREATE] [CAP3-MOVING-AVERAGE]
 #              [CAP3-DECOMP-MULTIPLICATIVE] [CAP3-DECOMP-ADDITIVE]
 #              [CAP3-FORECAST] [CAP3-AUTOCORRELATION] [CAP3-SIMPLE-INDEX]
@@ -59,21 +64,23 @@ options(digits = 15)
 # [HEADER-TRUNC4]  trunc_4(x)
 # MATHEMATICAL INTUITION & UMA FORMULA:
 #   Moodle CUTS the answer to 4 decimals (it does not round):
-#       trunc_4(x) = trunc(x * 10^4) / 10^4
+#       trunc_4(x) = sign(x) * trunc( abs(x) * 10^4 + 1e-8 ) / 10^4
 #   Example: 0.96806 -> 0.9680 (rounding would give 0.9681, WRONG).
-#   Negative numbers are cut towards zero: -1.23459 -> -1.2345.
+#   Negative numbers are cut towards zero: -1.23459 -> -1.2345 and
+#   -1.2345 stays -1.2345 (the sign is taken out first, so the tiny
+#   correction 1e-8 never pushes a negative number the wrong way).
+#   The 1e-8 protects numbers such as 0.29, which R stores as
+#   0.28999999999999998 and would otherwise lose their last digit.
 #   To PRINT four decimals use sprintf("%.4f", trunc_4(x)).
-#   Floating-point note: 0.29 is stored as 0.28999999999999998, so in very
-#   rare cases the last digit can be lost. If a result looks one unit too
-#   small, check it with trunc(x * 1e4 + 1e-8) / 1e4.
 # INPUTS & OUTPUTS:
 #   x : number, vector or matrix.  Returns x cut to 4 decimals.
 # DEPENDENCIES: none.
 # ---------------------------------------------------------------------
 trunc_4 <- function(x) {
-  # Step 1: Move 4 decimals to the left of the point, cut, move them back
-  result <- trunc(x * 1e4) / 1e4
-  return(result)
+  # Step 1: Cut the absolute value to 4 decimals and put the sign back
+  result <- sign(x) * trunc(abs(x) * 1e4 + 1e-8) / 1e4
+  # Step 2: Adding 0 turns a negative zero (-0) into 0, so it never prints "-0.0000"
+  return(result + 0)
 }
 
 
@@ -83,16 +90,21 @@ trunc_4 <- function(x) {
 #   No formula: it saves typing. Paste the data of the exam as one piece
 #   of text and get a numeric vector c(...). Spaces, tabs, new lines,
 #   commas and semicolons are separators. Decimals must use a DOT.
+#   Non-breaking spaces and the Unicode minus sign (typical when copying
+#   from Moodle) are converted to normal characters first.
 # INPUTS & OUTPUTS:
 #   text_string : text, e.g. "3, 5; 7   9\n10".  Returns c(3, 5, 7, 9, 10).
 # DEPENDENCIES: none.
 # ---------------------------------------------------------------------
 parse_input <- function(text_string) {
-  # Step 1: Replace commas, semicolons, spaces, tabs and new lines by one space
-  clean_text <- gsub("[,;[:space:]]+", " ", text_string)
-  # Step 2: Remove the spaces at the beginning and at the end
+  # Step 1: Unicode minus sign -> "-" and non-breaking space -> " "
+  clean_text <- gsub("\u2212", "-", text_string, fixed = TRUE)
+  clean_text <- gsub("\u00a0", " ", clean_text, fixed = TRUE)
+  # Step 2: Replace commas, semicolons, spaces, tabs and new lines by one space
+  clean_text <- gsub("[,;[:space:]]+", " ", clean_text)
+  # Step 3: Remove the spaces at the beginning and at the end
   clean_text <- trimws(clean_text)
-  # Step 3: Split into pieces and convert each piece into a number
+  # Step 4: Split into pieces and convert each piece into a number
   pieces <- strsplit(clean_text, " ", fixed = TRUE)[[1]]
   numbers <- as.numeric(pieces)
   return(numbers)
@@ -234,8 +246,6 @@ rms_desc <- function(x, ni = NULL) {
 median_desc <- function(x, ni = NULL) {
   # Step 1: The median is the quantile of order 0.5
   median_x <- quantile_discrete(x, 0.5, ni)
-  # Step 2: Remove the name "p=0.5"
-  median_x <- unname(median_x)
   return(median_x)
 }
 
@@ -283,17 +293,29 @@ median_intervals <- function(L_inf, L_sup, ni) {
 
 
 # ---------------------------------------------------------------------
-# [CAP1-QUANTILE-DISCRETE] quantile_discrete(x, p, ni = NULL)
-# Algoritmo oficial UMA con type = 2 (exigido en Exam rules)
+# [CAP1-QUANTILE-DISCRETE]  quantile_discrete(x, p, ni = NULL)
+# MATHEMATICAL INTUITION & UMA FORMULA:
+#   Quantile of order p for raw data or a frequency table. UMA rule:
+#       compute c*N = E + D   (c = p, E = integer part, D = decimal part)
+#       D > 0  ->  Q_p = x_(E+1)
+#       D = 0  ->  Q_p = (x_E + x_(E+1)) / 2
+#   x_(k) = k-th smallest datum (data sorted, each x_i repeated n_i times).
+#   This is exactly R's quantile(..., type = 2), required by the exam
+#   rules (R's default type = 7 gives DIFFERENT values: never use it).
+#   Median: p = 0.5.  Quartiles: p = 0.25, 0.75.  Deciles, percentiles too.
+# INPUTS & OUTPUTS:
+#   x : raw data (or the values x_i if ni is given).
+#   p : one or several orders in [0, 1].
+#   ni : optional absolute frequencies (whole numbers).
+#   Returns a numeric vector (no names) with the quantile of each p.
+# DEPENDENCIES: none.
 # ---------------------------------------------------------------------
-
 quantile_discrete <- function(x, p, ni = NULL) {
-  if (!is.null(ni)) {
-    x <- rep(x, ni)
-  }
-  
-  quantile_vals <- unname(quantile(x, p, type = 2))
-  return(quantile_vals)
+  # Step 1: Frequency table -> raw data (each x_i repeated n_i times)
+  if (!is.null(ni)) x <- rep(x, ni)
+  # Step 2: type = 2 is the UMA rule c*N = E + D
+  quantile_values <- unname(quantile(x, p, type = 2))
+  return(quantile_values)
 }
 
 
@@ -375,12 +397,12 @@ mode_intervals <- function(L_inf, L_sup, ni) {
   # Step 2: Height of the previous and of the next class (0 outside the table)
   previous_heights <- c(0, heights)[1:k]
   next_heights <- c(heights, 0)[2:(k + 1)]
-  # Step 3: Modal class = maximum height
-  i <- which(abs(heights - max(heights)) < 1e-12)
+  # Step 3: Modal class = maximum height (small tolerance for decimal data)
+  i <- which(abs(heights - max(heights)) < 1e-9)
   # Step 4: Mo = L_(i-1) + d1 / (d1 + d2) * a_i
   d1 <- heights[i] - previous_heights[i]
   d2 <- heights[i] - next_heights[i]
-  modes <- L_inf[i] + d1 / (d1 + d2) * widths[i]
+  modes <- unique(modes[is.finite(modes)])
   return(modes)
 }
 
@@ -555,7 +577,7 @@ iqr_desc <- function(x, ni = NULL) {
   # Step 1: First and third quartiles
   quartiles <- quantile_discrete(x, c(0.25, 0.75), ni)
   # Step 2: Q3 - Q1
-  iqr_x <- unname(quartiles[2] - quartiles[1])
+  iqr_x <- quartiles[2] - quartiles[1]
   return(iqr_x)
 }
 
@@ -625,8 +647,8 @@ check_symmetry_criteria <- function(x, ni = NULL) {
   mean_x <- mean_desc(x, ni)
   median_x <- median_desc(x, ni)
   modes <- mode_desc(x, ni)
-  q1 <- unname(quantile_discrete(x, 0.25, ni))
-  q3 <- unname(quantile_discrete(x, 0.75, ni))
+  q1 <- quantile_discrete(x, 0.25, ni)
+  q3 <- quantile_discrete(x, 0.75, ni)
   g1 <- skewness_fisher(x, ni)
   # Step 2: A positive difference means positive asymmetry, negative -> negative
   verdict <- function(d) if (abs(d) < 1e-9) "symmetric" else if (d > 0) "positive asymmetry" else "negative asymmetry"
@@ -778,7 +800,7 @@ kurtosis_fisher <- function(x, ni = NULL) {
 # ---------------------------------------------------------------------
 outliers_iqr <- function(x, ni = NULL) {
   # Step 1: Quartiles and IQR
-  quartiles <- unname(quantile_discrete(x, c(0.25, 0.75), ni))
+  quartiles <- quantile_discrete(x, c(0.25, 0.75), ni)
   iqr_x <- quartiles[2] - quartiles[1]
   # Step 2: Fences c(lower, upper)
   moderate_fences <- c(quartiles[1] - 1.5 * iqr_x, quartiles[2] + 1.5 * iqr_x)
@@ -847,6 +869,11 @@ table_from_vector <- function(x, NRows) {
 #   and Y become two raw paired vectors that can be used in every
 #   regression / correlation function. The values x_i and y_j are the
 #   row / column NAMES of the table (they must be numbers).
+#   Alternative with weights (no expansion): one row per cell,
+#       x_cells <- rep(res$x_i, each = ncol(res$n_ij))
+#       y_cells <- rep(res$y_j, times = nrow(res$n_ij))
+#       w_cells <- as.vector(t(res$n_ij))
+#   and use w = w_cells in regression_custom_linear() / covariance_desc().
 # INPUTS & OUTPUTS:
 #   tab : table of whole-number frequencies n_ij.
 #   Returns list(X, Y, x_i, y_j, n_ij): expanded vectors, values of the
@@ -1065,23 +1092,18 @@ correlation_pearson <- function(x, y) {
 # [CAP2-CORR-SPEARMAN]  correlation_spearman(x, y)
 # MATHEMATICAL INTUITION & UMA FORMULA:
 #   Rank correlation: Pearson's r computed on the RANKS (rank 1 = smallest;
-#   ties get the average of their positions). Without ties:
+#   ties get the AVERAGE of their positions, which is what base R rank()
+#   does). Without ties:
 #       rho = 1 - 6 * sum(d_i^2) / ( N * (N^2 - 1) ),  d_i = rank(x_i) - rank(y_i)
-#   It measures any monotonic relation.
+#   With ties the formula above is not exact, but cor(rank(x), rank(y))
+#   always is. It measures any monotonic relation.
 # INPUTS & OUTPUTS:
 #   x, y : paired raw data.  Returns one number: rho.
 # DEPENDENCIES: none.
 # ---------------------------------------------------------------------
 correlation_spearman <- function(x, y) {
-  # Step 1: Ranks (ties get the average rank)
-  ranks_x <- rank(x)
-  ranks_y <- rank(y)
-  # Step 2: Covariance and variances of the ranks (divide by N)
-  cov_ranks <- mean((ranks_x - mean(ranks_x)) * (ranks_y - mean(ranks_y)))
-  var_ranks_x <- mean((ranks_x - mean(ranks_x))^2)
-  var_ranks_y <- mean((ranks_y - mean(ranks_y))^2)
-  # Step 3: Pearson correlation of the ranks
-  rho <- cov_ranks / sqrt(var_ranks_x * var_ranks_y)
+  # Step 1: Pearson correlation of the ranks (ties get the average rank)
+  rho <- cor(rank(x), rank(y))
   return(rho)
 }
 
@@ -1095,7 +1117,7 @@ correlation_spearman <- function(x, y) {
 #     (s_y^2 divides by N, so R2 = 1 - SSE / SST).
 #   * Every function returns a list with $a, $b, $SSE, $MSE, $RMSE, $R2,
 #     $equation (text, coefficients CUT to 4 decimals) and $predict (a
-#     function that predicts y for new x values).
+#     function that predicts for new values).
 #   * DEPENDENCIES: trunc_4() (it is used in $equation).
 # ---------------------------------------------------------------------
 
@@ -1144,12 +1166,19 @@ regression_Y_on_X <- function(x, y) {
 #   Solving for y gives the SAME line as  y = a_y + b_y*x  with
 #       b_y = 1 / b       a_y = -a / b
 #   Both regression lines cross at (mean_x, mean_y) and r^2 = b_yx * b_xy.
-#   SSE, MSE, RMSE, R2 and predict() use the line y = a_y + b_y*x, so the
-#   errors are measured on Y (original scale).
+#   PREDICTIONS (no ambiguity):
+#       $predict(y_val) = $predict_x_given_y(y_val) = a + b*y_val   -> gives X
+#       $predict_y_given_x(x_val) = a_y + b_y*x_val                 -> gives Y
+#   ERRORS:
+#       SSE, MSE, RMSE, R2 : measured on Y (original scale) with the
+#                            line y = a_y + b_y*x, as in the other models.
+#       SSE_x, MSE_x, RMSE_x : errors of predicting X from Y with
+#                            x = a + b*y. The R2 of THIS regression is r2.
 # INPUTS & OUTPUTS:
 #   x, y : paired raw data (s_xy different from 0).
-#   Returns list(a, b, a_y, b_y, r2, SSE, MSE, RMSE, R2, equation,
-#   equation_y, predict); a and b belong to x = a + b*y.
+#   Returns list(a, b, a_y, b_y, r2, SSE, MSE, RMSE, R2, SSE_x, MSE_x,
+#   RMSE_x, equation, equation_y, predict, predict_x_given_y,
+#   predict_y_given_x); a and b belong to x = a + b*y.
 # DEPENDENCIES: trunc_4().
 # ---------------------------------------------------------------------
 regression_X_on_Y <- function(x, y) {
@@ -1165,18 +1194,23 @@ regression_X_on_Y <- function(x, y) {
   a <- mean_x - b * mean_y
   b_y <- 1 / b
   a_y <- -a / b
-  # Step 3: Errors on the original Y, using the line y = a_y + b_y*x
+  # Step 3: Errors on Y (line y = a_y + b_y*x) and errors on X (line x = a + b*y)
   SSE <- sum((y - (a_y + b_y * x))^2)
   MSE <- SSE / N
   R2 <- 1 - MSE / var_y
-  # Step 4: r^2 = b_yx * b_xy, equations and prediction function
+  SSE_x <- sum((x - (a + b * y))^2)
+  MSE_x <- SSE_x / N
+  # Step 4: r^2 = b_yx * b_xy, equations and prediction functions
   r2 <- cov_xy^2 / (var_x * var_y)
   equation <- sprintf("x = %.4f + (%.4f)*y", trunc_4(a), trunc_4(b))
   equation_y <- sprintf("y = %.4f + (%.4f)*x", trunc_4(a_y), trunc_4(b_y))
-  predict_function <- function(x_new) a_y + b_y * x_new
+  predict_x_given_y <- function(y_val) a + b * y_val
+  predict_y_given_x <- function(x_val) a_y + b_y * x_val
   return(list(a = a, b = b, a_y = a_y, b_y = b_y, r2 = r2, SSE = SSE, MSE = MSE,
-              RMSE = sqrt(MSE), R2 = R2, equation = equation, equation_y = equation_y,
-              predict = predict_function))
+              RMSE = sqrt(MSE), R2 = R2, SSE_x = SSE_x, MSE_x = MSE_x, RMSE_x = sqrt(MSE_x),
+              equation = equation, equation_y = equation_y,
+              predict = predict_x_given_y, predict_x_given_y = predict_x_given_y,
+              predict_y_given_x = predict_y_given_x))
 }
 
 
@@ -1330,10 +1364,10 @@ regression_polynomial <- function(x, y, degree = 2) {
   # Step 1: Matrix M with columns 1, x, x^2, ...
   N <- length(x)
   M <- outer(x, 0:degree, "^")
-  # Step 2: Normal equations
-  coefficients <- drop(solve(t(M) %*% M) %*% t(M) %*% y)
+  # Step 2: Normal equations (t(M) M) coefficients = t(M) y
+  coefficients <- drop(solve(t(M) %*% M, t(M) %*% y))
   # Step 3: Errors on the ORIGINAL Y
-  SSE <- sum((y - M %*% coefficients)^2)
+  SSE <- sum((y - drop(M %*% coefficients))^2)
   MSE <- SSE / N
   R2 <- 1 - MSE / (sum((y - mean(y))^2) / N)
   # Step 4: Equation text "y = (a) + (b)*x + (c)*x^2"
@@ -1347,34 +1381,59 @@ regression_polynomial <- function(x, y, degree = 2) {
 
 
 # ---------------------------------------------------------------------
-# [CAP2-REG-CUSTOM-LINEAR]  regression_custom_linear(X_matrix, Y_vector)
+# [CAP2-REG-CUSTOM-LINEAR]  regression_custom_linear(X_matrix, Y_vector,
+#                                         w = NULL, y_orig = NULL, inverse = NULL)
 # MATHEMATICAL INTUITION & UMA FORMULA:
 #   Any model LINEAR IN ITS COEFFICIENTS:  Y = c1*M1 + c2*M2 + ...
-#   where each column Mj is a function of the data that YOU build:
-#       coefficients = solve( t(M) %*% M ) %*% t(M) %*% Y
+#   where each column Mj is a function of the data that YOU build.
+#   WEIGHTED normal equations (W = diagonal matrix with the frequencies w_i):
+#       coefficients = solve( t(M) %*% W %*% M ) %*% t(M) %*% W %*% Y
+#   Without w every row counts once (W = identity).
 #   Example  Z = c + d*ln(X*Y):      M <- cbind(1, log(x*y)),  Y_vector <- z
 #   Example  y = a + b*x + c*ln(x):  M <- cbind(1, x, log(x))
-#   Errors on the scale of Y_vector.
+#   JOINT FREQUENCY TABLE: one row per cell (x_i, y_j) and w = n_ij
+#   (see the weights alternative in table_to_vectors()).
+#   ERRORS are measured on the ORIGINAL target variable:
+#       SSE = sum( w_i * (y_orig_i - yhat_orig_i)^2 )     MSE = SSE / N
+#       R2  = 1 - MSE / s_n^2(y_orig)        (N = sum(w), s_n^2 divides by N)
+#   * Target NOT transformed (Z = c + d*ln(X*Y)): leave y_orig = NULL, the
+#     errors are measured on Y_vector itself.
+#   * Target transformed (Y_vector = ln(y) or 1/y): give the raw data in
+#     y_orig and the back-transformation in inverse, so that
+#     yhat_orig = inverse(M %*% coefficients). For example:
+#         ln(y) -> inverse = exp         1/y -> inverse = function(v) 1 / v
 # INPUTS & OUTPUTS:
 #   X_matrix : matrix M, one column per term (add a column of 1s if the
-#   model has a constant).  Y_vector : the variable to explain.
+#   model has a constant).  Y_vector : the variable that is fitted.
+#   w : optional frequency of each row of M.  y_orig : optional raw target
+#   on its original scale.  inverse : optional function that undoes the
+#   transformation of Y_vector (default: none).
 #   Returns list(coefficients, a, b, SSE, MSE, RMSE, R2, equation,
-#   predict); a = first coefficient, b = second one; predict(new_matrix)
-#   needs a matrix with the same columns.
+#   predict); a = first coefficient, b = second one. predict(new_matrix)
+#   needs a matrix with the same columns and returns the prediction on
+#   the ORIGINAL scale (inverse already applied).
 # DEPENDENCIES: trunc_4().
 # ---------------------------------------------------------------------
-regression_custom_linear <- function(X_matrix, Y_vector) {
-  # Step 1: Normal equations
+regression_custom_linear <- function(X_matrix, Y_vector, w = NULL, y_orig = NULL, inverse = NULL) {
+  # Step 1: Matrix M, frequencies (all 1 if w = NULL) and total N
   M <- as.matrix(X_matrix)
-  N <- length(Y_vector)
-  coefficients <- drop(solve(t(M) %*% M) %*% t(M) %*% Y_vector)
-  # Step 2: Errors on the scale of Y
-  SSE <- sum((Y_vector - M %*% coefficients)^2)
+  if (is.null(w)) w <- rep(1, nrow(M))
+  N <- sum(w)
+  # Step 2: Weighted normal equations (t(M) W M) coefficients = t(M) W Y
+  coefficients <- drop(solve(t(M) %*% (w * M), t(M) %*% (w * Y_vector)))
+  # Step 3: Original target and back-transformation (nothing if not given)
+  if (is.null(y_orig)) y_orig <- Y_vector
+  if (is.null(inverse)) inverse <- function(v) v
+  fitted_original <- inverse(drop(M %*% coefficients))
+  # Step 4: Errors on the ORIGINAL scale: R2 = 1 - MSE / s_n^2(y_orig)
+  SSE <- sum(w * (y_orig - fitted_original)^2)
   MSE <- SSE / N
-  R2 <- 1 - MSE / (sum((Y_vector - mean(Y_vector))^2) / N)
-  # Step 3: Equation text "Y = (c1)*M1 + (c2)*M2 + ..." and prediction function
+  mean_original <- sum(w * y_orig) / N
+  var_original <- sum(w * (y_orig - mean_original)^2) / N
+  R2 <- 1 - MSE / var_original
+  # Step 5: Equation text "Y = (c1)*M1 + (c2)*M2 + ..." and prediction function
   equation <- paste("Y =", paste0("(", sprintf("%.4f", trunc_4(coefficients)), ")*M", seq_along(coefficients), collapse = " + "))
-  predict_function <- function(new_matrix) drop(as.matrix(new_matrix) %*% coefficients)
+  predict_function <- function(new_matrix) inverse(drop(as.matrix(new_matrix) %*% coefficients))
   return(list(coefficients = coefficients, a = coefficients[1], b = coefficients[2],
               SSE = SSE, MSE = MSE, RMSE = sqrt(MSE), R2 = R2,
               equation = equation, predict = predict_function))
@@ -1395,12 +1454,12 @@ regression_custom_linear <- function(X_matrix, Y_vector) {
 # DEPENDENCIES: trunc_4().
 # ---------------------------------------------------------------------
 plane_regression <- function(x, y, z) {
-  # Step 1: Matrix M = [1, x, y] and normal equations
+  # Step 1: Matrix M = [1, x, y] and normal equations (t(M) M) coefficients = t(M) z
   N <- length(z)
   M <- cbind(1, x, y)
-  coefficients <- drop(solve(t(M) %*% M) %*% t(M) %*% z)
+  coefficients <- drop(solve(t(M) %*% M, t(M) %*% z))
   # Step 2: Errors on Z
-  SSE <- sum((z - M %*% coefficients)^2)
+  SSE <- sum((z - drop(M %*% coefficients))^2)
   MSE <- SSE / N
   R2 <- 1 - MSE / (sum((z - mean(z))^2) / N)
   # Step 3: Equation and prediction function
@@ -1469,10 +1528,15 @@ compare_models <- function(x, y, x_predict = NULL) {
 # MATHEMATICAL INTUITION & UMA FORMULA:
 #   In a histogram the AREA of each bar is the frequency:
 #       n_i = h_i * a_i        (height h_i = density, width a_i)
-#   If the heights are only proportional and the total N is known, rescale
-#   so that the areas add up to N:
+#   If the heights are only proportional (or rounded) and the total N is
+#   known, rescale so that the areas add up EXACTLY to N:
 #       n_i = h_i * a_i * N / sum(h_i * a_i)
-#   Then f_i = n_i / N and N_i, F_i are the cumulative columns.
+#   This works the same whether the areas add up to 99.9, to 100 or to 1.0
+#   (densities given as relative frequencies): after the rescaling the
+#   total is N in all three cases.
+#   Without N the areas are kept as they are and f_i = n_i / sum(n_i), so
+#   f_i, N_i and F_i are still correct whatever the total is.
+#   Then f_i = n_i / total and N_i, F_i are the cumulative columns.
 # INPUTS & OUTPUTS:
 #   h_i : bar heights.  a_i : class widths.  N : optional total.
 #   Returns data.frame with columns h_i, a_i, n_i, f_i, N_i, F_i.
@@ -1528,7 +1592,8 @@ deduce_sample_two_obs <- function(mean_val, sd_val) {
 #   so x2 and x3 are the two roots of the quadratic  u^2 - S*u + P = 0:
 #       u = (S -/+ sqrt(S^2 - 4*P)) / 2
 #   If the exam gives the quasi-variance, first use var = quasi_var * 2 / 3.
-#   If S^2 - 4*P < 0 there is no real solution (R returns NaN).
+#   If S^2 - 4*P < 0 there is no real solution (R returns NaN). A tiny
+#   negative value caused only by decimals (x2 = x3) is treated as 0.
 # INPUTS & OUTPUTS:
 #   mean_val : mean.  var_val : variance (divides by N).  x1 : known datum.
 #   Returns the named vector c(x1, x2, x3) with x2 <= x3.
@@ -1540,8 +1605,9 @@ deduce_sample_three_obs <- function(mean_val, var_val, x1) {
   sum_sq_x2_x3 <- 3 * (var_val + mean_val^2) - x1^2
   # Step 2: Product P = x2 * x3
   product <- (sum_x2_x3^2 - sum_sq_x2_x3) / 2
-  # Step 3: Roots of u^2 - S*u + P = 0
+  # Step 3: Roots of u^2 - S*u + P = 0 (a discriminant of about -1e-12 is really 0)
   discriminant <- sum_x2_x3^2 - 4 * product
+  if (abs(discriminant) < 1e-9) discriminant <- 0
   x2 <- (sum_x2_x3 - sqrt(discriminant)) / 2
   x3 <- (sum_x2_x3 + sqrt(discriminant)) / 2
   return(c(x1 = x1, x2 = x2, x3 = x3))
@@ -1574,7 +1640,8 @@ identify_regression_lines <- function(line1_coefs, line2_coefs) {
   y_on_x_line <- 1
   r2 <- (y_on_x[1] / y_on_x[2]) * (x_on_y[2] / x_on_y[1])
   # Step 2: r^2 cannot be above 1, so if it is, the roles are swapped
-  if (r2 > 1) {
+  #         (small tolerance: a perfect correlation r^2 = 1 must not swap)
+  if (r2 > 1 + 1e-9) {
     y_on_x <- line2_coefs
     x_on_y <- line1_coefs
     y_on_x_line <- 2
@@ -1796,6 +1863,7 @@ deduce_linear_transform_params <- function(mean_x, sd_x, mean_y, sd_y) {
   return(list(a = a, b = b))
 }
 
+
 # =====================================================================
 # BLOCK 4: TIME SERIES & INDEXES (CHAPTER 3)
 # =====================================================================
@@ -1992,8 +2060,11 @@ autocorrelation <- function(data, lag, method = "pearson") {
   result <- numeric(length(lag))
   for (j in seq_along(lag)) {
     # Step 2: Pearson correlation between the first N-k and the last N-k data
-    if (method == "pearson") result[j] <- stats::cor(x[1:(N - lag[j])], x[(lag[j] + 1):N])
-    else result[j] <- stats::acf(x, lag.max = lag[j], plot = FALSE)$acf[lag[j] + 1]
+    if (method == "pearson") {
+      result[j] <- stats::cor(x[1:(N - lag[j])], x[(lag[j] + 1):N])
+    } else {
+      result[j] <- stats::acf(x, lag.max = lag[j], plot = FALSE)$acf[lag[j] + 1]
+    }
   }
   names(result) <- paste0("lag_", lag)
   return(result)
