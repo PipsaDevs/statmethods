@@ -283,36 +283,17 @@ median_intervals <- function(L_inf, L_sup, ni) {
 
 
 # ---------------------------------------------------------------------
-# [CAP1-QUANTILE-DISCRETE]  quantile_discrete(x, p, ni = NULL)
-# MATHEMATICAL INTUITION & UMA FORMULA:
-#   Strict UMA rule for the quantile of order p:
-#       write  c*N = E + D   (c = p; E = integer part, D = decimal part)
-#       D > 0  ->  quantile = x_(E+1)                 (next ordered datum)
-#       D = 0  ->  quantile = ( x_(E) + x_(E+1) ) / 2
-#   x_(k) is the datum in position k of the SORTED data (all N data, not
-#   only the different values). Median p = 0.5, quartiles p = 0.25, 0.75.
-#   This differs from R's quantile(): do not use quantile() in the exam.
-# INPUTS & OUTPUTS:
-#   x : raw data (or values x_i).  p : one or several orders in [0, 1].
-#   ni : optional frequencies (whole numbers).
-#   Returns a named vector (names "p=0.25", ...).
-# DEPENDENCIES: none.
+# [CAP1-QUANTILE-DISCRETE] quantile_discrete(x, p, ni = NULL)
+# Algoritmo oficial UMA con type = 2 (exigido en Exam rules)
 # ---------------------------------------------------------------------
+
 quantile_discrete <- function(x, p, ni = NULL) {
-  # Step 1: List all N data in increasing order
-  if (is.null(ni)) sorted_data <- sort(x) else sorted_data <- rep(x[order(x)], ni[order(x)])
-  N <- length(sorted_data)
-  result <- numeric(length(p))
-  for (j in seq_along(p)) {
-    # Step 2: c*N = E + D (rounded to avoid floating-point noise)
-    cN <- round(p[j] * N, 9)
-    E <- floor(cN)
-    D <- cN - E
-    # Step 3: UMA rule (positions kept between 1 and N)
-    if (D > 0) result[j] <- sorted_data[E + 1] else result[j] <- (sorted_data[max(E, 1)] + sorted_data[min(E + 1, N)]) / 2
+  if (!is.null(ni)) {
+    x <- rep(x, ni)
   }
-  names(result) <- paste0("p=", p)
-  return(result)
+  
+  quantile_vals <- unname(quantile(x, p, type = 2))
+  return(quantile_vals)
 }
 
 
@@ -944,9 +925,6 @@ conditional_distributions <- function(tab) {
 #   Returns a matrix of expected frequencies e_ij.
 # DEPENDENCIES: none.
 # ---------------------------------------------------------------------
-#
-
-# Possible implementation
 expected_frequencies <- function(tab) {
   # Step 1: Plain matrix, totals and N
   n_ij <- unclass(as.matrix(tab))
@@ -995,8 +973,6 @@ is_independent <- function(tab) {
 #   Returns one number: the chi-square statistic.
 # DEPENDENCIES: none.
 # ---------------------------------------------------------------------
-#
-# Update docs
 chi_square <- function(tab) {
   # Step 1: Observed frequencies
   observed <- unclass(as.matrix(tab))
@@ -1459,8 +1435,6 @@ plane_regression <- function(x, y, z) {
 #   regression_hyperbolic(), regression_logarithmic(), regression_power(),
 #   regression_polynomial().
 # ---------------------------------------------------------------------
-
-# Maybe?
 compare_models <- function(x, y, x_predict = NULL) {
   # Step 1: Fit every model (each one measures its errors on the original Y)
   models <- list(Linear = regression_Y_on_X(x, y), Exponential = regression_exponential(x, y),
