@@ -653,3 +653,30 @@ pipsa_is_regression_valid <- function(b_yx, b_xy) {
   r2 <- b_xy * b_yx
   (r2 > 0) && (r2 <= 1)
 }
+
+#' Theoretical Regression Parameters from Slopes
+#'
+#' Computes the linear correlation coefficient (r), covariance (s_xy),
+#' and population variance of Y (sigma_y^2) given the regression slopes
+#' b_yx and b_xy alongside the variance of X.
+#'
+#' @param b_yx Numeric slope of regression line Y on X.
+#' @param b_xy Numeric slope of regression line X on Y.
+#' @param var_x Numeric population variance of variable X.
+#' @return A named list containing `r` (correlation),
+#' `cov` (covariance), and `var_y` (variance of Y).
+#' @examples
+#' # Given slopes b_yx = 2/9, b_xy = 2, and var_x = 9
+#' pipsa_regression_from_slopes(2 / 9, 2, 9)
+#' @export
+pipsa_regression_from_slopes <- function(b_yx, b_xy, var_x) {
+  r <- sign(b_yx) * sqrt(b_yx * b_xy)
+  cov_xy <- b_yx * var_x
+  var_y <- cov_xy / b_xy
+
+  pipsa_print(r, "Correlation coefficient (r): ")
+  pipsa_print(cov_xy, "Covariance (s_xy): ")
+  pipsa_print(var_y, "Variance of Y (sigma_y^2): ")
+
+  list(r = r, cov = cov_xy, var_y = var_y)
+}
