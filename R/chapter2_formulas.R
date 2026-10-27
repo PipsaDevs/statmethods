@@ -334,7 +334,7 @@ pipsa_cond_dist_gen <- function(values, condition_var = c("x", "y"), value, retu
 
   if (returnMean) {
     mean <- sum(res$relative * as.numeric(res$y))
-    return(list("table" = res, "mean" = mean))
+    list("table" = res, "mean" = mean)
   } else {
     res
   }
@@ -589,4 +589,50 @@ pipsa_contingency_coef <- function(tbl) {
   chi2 <- pipsa_chi_square(tbl)
   n <- sum(tbl)
   sqrt(chi2 / (chi2 + n))
+}
+
+#' Plane Fitting & Evaluation
+#'
+#' Fits a multiple linear regression plane (z = a + bx + cy) to 3D spatial data
+#' and calculates the Model, Sum of Squared Errors (SSE), Residual Variance, and R^2.
+#'
+#' @param x Numeric vector for independent variable X.
+#' @param y Numeric vector for independent variable Y.
+#' @param z Numeric vector for dependent variable Z.
+#' @return A named list: Model, SSE, ResidualVariance, R2, Predict (function), and optionally Prediction.
+#' @examples
+#' x <- c(0, 1, 0, -1, 0, 1, 1, 2)
+#' y <- c(0, 1, 1, 1, 3, 2, 2, 0)
+#' z <- c(2, 3, 4, 5, 7, 4, 5, 0)
+#' pipsa_plane_fit(x, y, z)
+#' @export
+pipsa_plane_fit <- function(x, y, z) {
+  n <- length(z)
+
+  model <- lm(z ~ x + y)
+
+  a <- coef(model)[1]
+  b <- coef(model)[2]
+  c <- coef(model)[3]
+
+  z_est <- a + (b * x) + (c * y)
+  err <- z - z_est
+
+  sse <- sum(err^2)
+  res_var <- sse / n
+  sst <- sum((z - mean(z))^2)
+  r2 <- 1 - (sse / sst)
+
+  predict_func <- function(x_val, y_val) {
+    unname(a + (b * x_val) + (c * y_val))
+  }
+
+  result <- list(
+    "Model" = model,
+    "SSE" = sse,
+    "ResidualVariance" = res_var,
+    "R2" = r2,
+    "Predict" = predict_func
+  )
+  result
 }
