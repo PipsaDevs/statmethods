@@ -543,3 +543,17 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
   )
   result
 }
+
+#' Obtain spearman correlation
+#'
+#' Obtains spearman correlation from 2 vectors
+#'
+#' @param x A vector for variable X
+#' @param y A vector for variable Y
+#' @return The Spearman correlation
+#' @examples
+#' pipsa_spearman_correlation(c(1, 2, 3), c(4, 5, 6))
+#' @export
+pipsa_spearman_correlation <- function(x, y) {
+  cor.test(x, y, method = "spearman")
+}
