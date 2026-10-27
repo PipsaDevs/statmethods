@@ -659,6 +659,15 @@ pipsa_plane_fit <- function(x, y, z) {
   result
 }
 
+#' Compare Regression Models
+#'
+#' Fits all seven models, ranks them by highest R2 (then lowest MSE),
+#' and optionally predicts a value using the best fit.
+#'
+#' @param x Numeric vector for independent variable X.
+#' @param y Numeric vector for dependent variable Y.
+#' @return Returns the results table, the winning model and the models list.
+#' @export
 pipsa_compare_models <- function(x, y) {
   keys <- c("l", "lo", "e", "p", "i", "q", "t")
 
@@ -687,5 +696,124 @@ pipsa_compare_models <- function(x, y) {
     cat("PREDICTION for X =", x_predict, "-> Y =", round(pred, 5), "\n")
   }
 
-  invisible(list(table = results, best_model = best_model))
+  list(table = results, best_model = best_model, models = models)
+}
+
+#' Regression validity
+#'
+#' Check the validity of 2 regression slopes (Reference: Exercise 10)
+#'
+#' @param b_yx Slope of y on x
+#' @param b_xy Slope of x on y
+#' @return Whether the regression lines are valid
+#' @examples
+#' # Suppose you have r_{y/x} === y = 5 + 8x
+#' # and r_{x/y} === y = 3 -2x => x = 3/2 - y/2
+#' pipsa_is_regression_valid(8, -0.5)
+#' @export
+pipsa_is_regression_valid <- function(b_yx, b_xy) {
+  r2 <- b_xy * b_yx
+  (r2 > 0) && (r2 <= 1)
+}
+
+#' Theoretical Regression Parameters from Slopes
+#'
+#' Computes the linear correlation coefficient (r), covariance (s_xy),
+#' and population variance of Y (sigma_y^2) given the regression slopes
+#' b_yx and b_xy alongside the variance of X.
+#'
+#' @param b_yx Numeric slope of regression line Y on X.
+#' @param b_xy Numeric slope of regression line X on Y.
+#' @param var_x Numeric population variance of variable X.
+#' @return A named list containing `r` (correlation),
+#' `cov` (covariance), and `var_y` (variance of Y).
+#' @examples
+#' # Given slopes b_yx = 2/9, b_xy = 2, and var_x = 9
+#' pipsa_regression_from_slopes(2 / 9, 2, 9)
+#' @export
+pipsa_regression_from_slopes <- function(b_yx, b_xy, var_x) {
+  r <- sign(b_yx) * sqrt(b_yx * b_xy)
+  cov_xy <- b_yx * var_x
+  var_y <- cov_xy / b_xy
+
+  pipsa_print(r, "Correlation coefficient (r): ")
+  pipsa_print(cov_xy, "Covariance (s_xy): ")
+  pipsa_print(var_y, "Variance of Y (sigma_y^2): ")
+
+  list(r = r, cov = cov_xy, var_y = var_y)
+}
+
+#' Update Regression Parameters and Lines After Removing an Observation
+#'
+#' Recalculates sample means, population variances, covariance, and the updated
+#' regression equations (r_Y/X and r_X/Y)
+#' after removing a specific data point (x0, y0).
+#'
+#' @param N Integer original sample size.
+#' @param mean_x Numeric original mean of X.
+#' @param mean_y Numeric original mean of Y.
+#' @param var_x Numeric original population variance of X.
+#' @param var_y Numeric original population variance of Y.
+#' @param cov_xy Numeric original population covariance between X and Y.
+#' @param pt Numeric vector of length 2 representing
+#' the removed point c(x0, y0).
+#' @return A named list with updated summary statistics:
+#' `mean_x`, `mean_y`, `var_x`, `var_y`, and `cov`.
+#' @examples
+#' # Remove point (2, -1) from a sample of N = 10
+#' pipsa_remove_point_stats(
+#'   N = 10, mean_x = 4, mean_y = 0,
+#'   var_x = 9, var_y = 1, cov_xy = 2,
+#'   pt = c(2, -1)
+#' )
+#' @export
+pipsa_remove_point_stats <- function(
+  N, mean_x, mean_y, var_x, var_y, cov_xy, pt
+) {
+  N_new <- N - 1
+  x0 <- pt[1]
+  y0 <- pt[2]
+
+  mx_new <- (N * mean_x - x0) / N_new
+  my_new <- (N * mean_y - y0) / N_new
+
+  vx_new <- (N * (var_x + mean_x^2) - x0^2) / N_new - mx_new^2
+  vy_new <- (N * (var_y + mean_y^2) - y0^2) / N_new - my_new^2
+  cov_new <- (
+    N * (
+      cov_xy + mean_x * mean_y
+    ) - x0 * y0
+  ) / N_new - mx_new * my_new
+
+  b_yx <- cov_new / vx_new
+  a_yx <- my_new - b_yx * mx_new
+
+  b_xy <- cov_new / vy_new
+  a_xy <- mx_new - b_xy * my_new
+
+  pipsa_print(
+    paste0(
+      "y = ",
+      round(a_yx, 5),
+      " + ",
+      round(b_yx, 5), " x"
+    ), "New r_{Y/X}: "
+  )
+  pipsa_print(
+    paste0(
+      "x = ",
+      round(a_xy, 5),
+      " + ",
+      round(b_xy, 5),
+      " y"
+    ), "New r_{X/Y}: "
+  )
+
+  list(
+    mean_x = mx_new,
+    mean_y = my_new,
+    var_x = vx_new,
+    var_y = vy_new,
+    cov = cov_new
+  )
 }
