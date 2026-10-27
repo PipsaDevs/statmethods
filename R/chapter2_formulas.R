@@ -334,7 +334,7 @@ pipsa_cond_dist_gen <- function(values, condition_var = c("x", "y"), value, retu
 
   if (returnMean) {
     mean <- sum(res$relative * as.numeric(res$y))
-    return(list("table" = res, "mean" = mean))
+    list("table" = res, "mean" = mean)
   } else {
     res
   }
