@@ -285,6 +285,7 @@ pipsa_std_deviation <- function(x) {
 #'
 #' Computes the Pearson linear correlation coefficient:
 #'  cov(X, Y) / (std_dev(X) * std_dev(Y)).
+#' It is the equivalent of doing cor.test(x, y, method = "pearson")
 #'
 #' @param x Numeric vector for X.
 #' @param y Numeric vector for Y.
@@ -547,6 +548,7 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 #' Obtain spearman correlation
 #'
 #' Obtains spearman correlation from 2 vectors
+#' The cor.test function also accepts pearson and kendall
 #'
 #' @param x A vector for variable X
 #' @param y A vector for variable Y
@@ -556,4 +558,35 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 #' @export
 pipsa_spearman_correlation <- function(x, y) {
   cor.test(x, y, method = "spearman")
+}
+
+#' Chi-Square Statistic
+#'
+#' Computes the Pearson Chi-Square statistic for a contingency table.
+#'
+#' @param tab A contingency table or matrix.
+#' @return The numeric Chi-square value.
+#' @examples
+#' data <- matrix(c(30, 20, 60, 40, 40, 10), nrow = 3, byrow = TRUE)
+#' pipsa_chi_square(data)
+#' @export
+pipsa_chi_square <- function(tab) {
+  test <- chisq.test(tab, correct = FALSE)
+  test$statistic
+}
+
+#' Pearson's Contingency Coefficient (C)
+#'
+#' Computes Pearson's Contingency Coefficient C for a contingency table.
+#'
+#' @param tbl A contingency table or matrix.
+#' @return The numeric coefficient C.
+#' @examples
+#' data <- matrix(c(30, 20, 60, 40, 40, 10), nrow = 3, byrow = TRUE)
+#' pipsa_contingency_coef(data)
+#' @export
+pipsa_contingency_coef <- function(tbl) {
+  chi2 <- pipsa_chi_square(tbl)
+  n <- sum(tbl)
+  sqrt(chi2 / (chi2 + n))
 }
