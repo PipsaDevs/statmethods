@@ -296,6 +296,10 @@ pipsa_calculate_correl <- function(data) {
 #' Consumer Price Index values (base year = 100).
 #' @return A data frame containing
 #' Nominal Values, CPI, Real Values, and Purchasing Power factor.
+#' @examples
+#' nominal_values <- c(100, 150) # Grows by 50% (100 -> 150)
+#' cpi_index <- c(100, 200) # CPI doubles (100 -> 200)
+#' pipsa_calculate_deflation(nominal_values, cpi_index)
 #' @export
 pipsa_calculate_deflation <- function(nominal_values, cpi_index) {
   if (length(nominal_values) != length(cpi_index)) {
