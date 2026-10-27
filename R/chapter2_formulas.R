@@ -14,14 +14,19 @@
 #' pipsa_print(3.14159)
 #' @export
 pipsa_print <- function(x, string = "", round_val = 5, reverse = FALSE) {
+  val <- if (is.numeric(x)) {
+    round(x, round_val)
+  } else {
+    x
+  }
   if (length(x) > 1) {
     print(string)
-    print(round(x, round))
+    print(val)
   } else {
     if (reverse == TRUE) {
-      print(paste(round(x, round), string))
+      print(paste(val, string))
     } else {
-      print(paste(string, round(x, round)))
+      print(paste(string, val))
     }
   }
 }
