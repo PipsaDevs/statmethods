@@ -741,77 +741,132 @@ pipsa_regression_from_slopes <- function(b_yx, b_xy, var_x) {
   list(r = r, cov = cov_xy, var_y = var_y)
 }
 
-#' Update Regression Parameters and Lines After Removing an Observation
+#' Update Regression Lines by Removing a Point (Standard Form Input)
 #'
-#' Recalculates sample means, population variances, covariance, and the updated
-#' regression equations (r_Y/X and r_X/Y)
-#' after removing a specific data point (x0, y0).
+#' Recalculates two regression lines after an erroneous point is removed.
+#' Inputs for the lines are given as a vector c(A, B, C) representing Ax + By = C.
 #'
-#' @param N Integer original sample size.
-#' @param mean_x Numeric original mean of X.
-#' @param mean_y Numeric original mean of Y.
-#' @param var_x Numeric original population variance of X.
-#' @param var_y Numeric original population variance of Y.
-#' @param cov_xy Numeric original population covariance between X and Y.
-#' @param pt Numeric vector of length 2 representing
-#' the removed point c(x0, y0).
-#' @return A named list with updated summary statistics:
-#' `mean_x`, `mean_y`, `var_x`, `var_y`, and `cov`.
-#' @examples
-#' # Remove point (2, -1) from a sample of N = 10
-#' pipsa_remove_point_stats(
-#'   N = 10, mean_x = 4, mean_y = 0,
-#'   var_x = 9, var_y = 1, cov_xy = 2,
-#'   pt = c(2, -1)
-#' )
+#' @param line_yx Numeric vector c(A, B, C) for the Y on X line (Ax + By = C).
+#' @param line_xy Numeric vector c(A, B, C) for the X on Y line (Ax + By = C).
+#' @param var_x Original population variance of X.
+#' @param n Original sample size.
+#' @param pt_x X-coordinate of the point to remove.
+#' @param pt_y Y-coordinate of the point to remove.
+#' @return A list with the updated equations, means, and variances.
 #' @export
-pipsa_remove_point_stats <- function(
-  N, mean_x, mean_y, var_x, var_y, cov_xy, pt
-) {
-  N_new <- N - 1
-  x0 <- pt[1]
-  y0 <- pt[2]
+pipsa_update_regression_remove_point <- function(line_yx, line_xy, var_x, n, pt_x, pt_y) {
+  # 1. Convert c(A, B, C) back to intercepts and slopes
+  # line_yx: A*x + B*y = C  =>  y = (C/B) - (A/B)*x
+  a_yx <- line_yx[3] / line_yx[2]
+  b_yx <- -line_yx[1] / line_yx[2]
 
-  mx_new <- (N * mean_x - x0) / N_new
-  my_new <- (N * mean_y - y0) / N_new
+  # line_xy: A*x + B*y = C  =>  x = (C/A) - (B/A)*y
+  a_xy <- line_xy[3] / line_xy[1]
+  b_xy <- -line_xy[2] / line_xy[1]
 
-  vx_new <- (N * (var_x + mean_x^2) - x0^2) / N_new - mx_new^2
-  vy_new <- (N * (var_y + mean_y^2) - y0^2) / N_new - my_new^2
-  cov_new <- (
-    N * (
-      cov_xy + mean_x * mean_y
-    ) - x0 * y0
-  ) / N_new - mx_new * my_new
+  # 2. Find original means by intersecting the two regression lines
+  mean_x <- (a_xy + b_xy * a_yx) / (1 - b_yx * b_xy)
+  mean_y <- a_yx + b_yx * mean_x
 
-  b_yx <- cov_new / vx_new
-  a_yx <- my_new - b_yx * mx_new
+  # 3. Reconstruct Covariance and Variance of Y
+  cov_xy <- b_yx * var_x
+  var_y <- cov_xy / b_xy
 
-  b_xy <- cov_new / vy_new
-  a_xy <- mx_new - b_xy * my_new
+  # 4. Reconstruct the original raw uncentered sums
+  sum_x <- n * mean_x
+  sum_y <- n * mean_y
+  sum_x2 <- n * (var_x + mean_x^2)
+  sum_y2 <- n * (var_y + mean_y^2)
+  sum_xy <- n * (cov_xy + mean_x * mean_y)
 
-  pipsa_print(
-    paste0(
-      "y = ",
-      round(a_yx, 5),
-      " + ",
-      round(b_yx, 5), " x"
-    ), "New r_{Y/X}: "
-  )
-  pipsa_print(
-    paste0(
-      "x = ",
-      round(a_xy, 5),
-      " + ",
-      round(b_xy, 5),
-      " y"
-    ), "New r_{X/Y}: "
-  )
+  # 5. Remove the erroneous point
+  n_new <- n - 1
+  sum_x_new <- sum_x - pt_x
+  sum_y_new <- sum_y - pt_y
+  sum_x2_new <- sum_x2 - (pt_x^2)
+  sum_y2_new <- sum_y2 - (pt_y^2)
+  sum_xy_new <- sum_xy - (pt_x * pt_y)
 
+  # 6. Calculate new means, variances, and covariance
+  mean_x_new <- sum_x_new / n_new
+  mean_y_new <- sum_y_new / n_new
+
+  var_x_new <- (sum_x2_new / n_new) - (mean_x_new^2)
+  var_y_new <- (sum_y2_new / n_new) - (mean_y_new^2)
+  cov_xy_new <- (sum_xy_new / n_new) - (mean_x_new * mean_y_new)
+
+  # 7. Build the new regression lines (slopes and intercepts)
+  b_yx_new <- cov_xy_new / var_x_new
+  a_yx_new <- mean_y_new - (b_yx_new * mean_x_new)
+
+  b_xy_new <- cov_xy_new / var_y_new
+  a_xy_new <- mean_x_new - (b_xy_new * mean_y_new)
+
+  # 8. Convert back to c(A, B, C) format for output
+  # y = a + bx  =>  -bx + 1y = a
+  new_vector_yx <- c(-b_yx_new, 1, a_yx_new)
+  # x = a + by  =>  1x - by = a
+  new_vector_xy <- c(1, -b_xy_new, a_xy_new)
+
+  # Return the results
   list(
-    mean_x = mx_new,
-    mean_y = my_new,
-    var_x = vx_new,
-    var_y = vy_new,
-    cov = cov_new
+    "New_Y_on_X_Vector" = new_vector_yx,
+    "New_X_on_Y_Vector" = new_vector_xy,
+    "New_Y_on_X_Coefs"  = c(Intercept = a_yx_new, Slope = b_yx_new),
+    "New_X_on_Y_Coefs"  = c(Intercept = a_xy_new, Slope = b_xy_new),
+    "New_Means"         = c(Mean_X = mean_x_new, Mean_Y = mean_y_new),
+    "New_Variances"     = c(Var_X = var_x_new, Var_Y = var_y_new, Cov_XY = cov_xy_new)
   )
+}
+
+#' Identify and Sort Regression Lines
+#'
+#' Given two unlabelled regression lines in standard form (Ax + By = C),
+#' this function determines which is the Y on X line and which is the X on Y line
+#' by testing the property that r^2 = (b_yx * b_xy) must be <= 1.
+#'
+#' @param line1 Numeric vector c(A, B, C) for the first line.
+#' @param line2 Numeric vector c(A, B, C) for the second line.
+#' @return A list identifying the correct Y on X line, X on Y line, and the R2.
+#' @examples
+#' # line1: 2x - y = -1  |  line2: x - 3y = -2
+#' pipsa_identify_regression_lines(c(2, -1, -1), c(1, -3, -2))
+#' @export
+pipsa_identify_regression_lines <- function(line1, line2) {
+  # Test Case A: Assume Line 1 is Y on X, Line 2 is X on Y
+  # Line 1 (Y on X): y = (-A1/B1)*x + (C1/B1) --> Slope = -A1/B1
+  b_yx_A <- -line1[1] / line1[2]
+  # Line 2 (X on Y): x = (-B2/A2)*y + (C2/A2) --> Slope = -B2/A2
+  b_xy_A <- -line2[2] / line2[1]
+
+  r2_A <- b_yx_A * b_xy_A
+
+  # If r2 is valid, Case A is correct
+  if (r2_A >= 0 && r2_A <= 1) {
+    return(list(
+      "Y_on_X_Vector" = line1,
+      "X_on_Y_Vector" = line2,
+      "R2" = r2_A,
+      "Message" = "Line 1 is Y on X. Line 2 is X on Y."
+    ))
+  }
+
+  # Test Case B: Assume Line 2 is Y on X, Line 1 is X on Y
+  b_yx_B <- -line2[1] / line2[2]
+  b_xy_B <- -line1[2] / line1[1]
+
+  r2_B <- b_yx_B * b_xy_B
+
+  # If r2 is valid, Case B is correct
+  if (r2_B >= 0 && r2_B <= 1) {
+    return(list(
+      "Y_on_X_Vector" = line2,
+      "X_on_Y_Vector" = line1,
+      "R2" = r2_B,
+      "Message" = "Line 2 is Y on X. Line 1 is X on Y."
+    ))
+  }
+
+  # If both fail, the problem data itself is mathematically invalid
+  stop("Invalid lines. Neither configuration produces an r^2 between 0 and 1.")
 }
