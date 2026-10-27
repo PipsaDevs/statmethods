@@ -285,6 +285,7 @@ pipsa_std_deviation <- function(x) {
 #'
 #' Computes the Pearson linear correlation coefficient:
 #'  cov(X, Y) / (std_dev(X) * std_dev(Y)).
+#' It is the equivalent of doing cor.test(x, y, method = "pearson")
 #'
 #' @param x Numeric vector for X.
 #' @param y Numeric vector for Y.
@@ -547,6 +548,7 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 #' Obtain spearman correlation
 #'
 #' Obtains spearman correlation from 2 vectors
+#' The cor.test function also accepts pearson and kendall
 #'
 #' @param x A vector for variable X
 #' @param y A vector for variable Y
