@@ -8,20 +8,25 @@
 #'
 #' @param x A number or series of numbers we want to print
 #' @param string A string to print before the number (default is empty)
-#' @param round The number of decimals to round to (default is 5)
+#' @param round_val The number of decimals to round to (default is 5)
 #' @return The number printed on the console with correct rounding
 #' @examples
 #' pipsa_print(3.14159)
 #' @export
-pipsa_print <- function(x, string = "", round = 5, reverse = FALSE) {
+pipsa_print <- function(x, string = "", round_val = 5, reverse = FALSE) {
+  val <- if (is.numeric(x)) {
+    round(x, round_val)
+  } else {
+    x
+  }
   if (length(x) > 1) {
     print(string)
-    print(round(x, round))
+    print(val)
   } else {
     if (reverse == TRUE) {
-      print(paste(round(x, round), string))
+      print(paste(val, string))
     } else {
-      print(paste(string, round(x, round)))
+      print(paste(string, val))
     }
   }
 }
@@ -173,6 +178,8 @@ pipsa_freq_distribution <- function(x, y) {
 pipsa_table_to_vectors <- function(tbl) {
   df_freq <- as.data.frame(tbl)
 
+  names_tbl <- names(dimnames(tbl))
+
   x_vec <- rep(df_freq[[1]], times = df_freq$Freq)
   y_vec <- rep(df_freq[[2]], times = df_freq$Freq)
 
@@ -183,7 +190,11 @@ pipsa_table_to_vectors <- function(tbl) {
     y_vec <- as.numeric(as.character(y_vec))
   }
 
-  data.frame(x = x_vec, y = y_vec)
+  if (!is.null(names_tbl) && tolower(names_tbl[1]) == "y") {
+    data.frame(x = y_vec, y = x_vec)
+  } else {
+    data.frame(x = x_vec, y = y_vec)
+  }
 }
 
 #' Marginal Distribution of X
@@ -279,6 +290,7 @@ pipsa_std_deviation <- function(x) {
 #'
 #' Computes the Pearson linear correlation coefficient:
 #'  cov(X, Y) / (std_dev(X) * std_dev(Y)).
+#' It is the equivalent of doing cor.test(x, y, method = "pearson")
 #'
 #' @param x Numeric vector for X.
 #' @param y Numeric vector for Y.
@@ -327,7 +339,7 @@ pipsa_cond_dist_gen <- function(values, condition_var = c("x", "y"), value, retu
 
   if (returnMean) {
     mean <- sum(res$relative * as.numeric(res$y))
-    return(list("table" = res, "mean" = mean))
+    list("table" = res, "mean" = mean)
   } else {
     res
   }
@@ -388,29 +400,26 @@ pipsa_mom_cent <- function(values, r, s) {
 #' @param fitting Character specifying model type:
 #'   - "l": Linear (y = a + bx)
 #'   - "lo": Logarithmic (y = a + b * ln(x))
-#'   - "e": Exponential (y = a * x^b)
+#'   - "e": Exponential (y = a * e^(bx))
+#'   - "p": Power (y = a * x^b)
 #'   - "i": Hyperbolic/Inverse (y = 1 / (a + bx))
 #'   - "q": Quadratic (y = ax^2 + bx + c)
-#'   - "t": Trigonometric (y = a·sin(x) + b·cos(x))
+#'   - "t": Trigonometric (y = a * sin(x) + b * cos(x))
 #' @return A named list: Model, mse, VarianceY, R2, Plot, Curve, Predict (function).
 #' @examples
 #' x <- c(1, 2, 3, 4, 5)
 #' y <- c(2, 4, 5, 8, 10)
-#' res <- pipsa_model_func(x, y, fitting = "l")
+#' res <- pipsa_model_func(x, y, fitting = "e")
 #' res$Predict(20)
 #' @export
 pipsa_model_func <- function(data_x, data_y, fitting) {
   n <- length(data_y)
   err <- data_y
 
-  # preparing graphical info
-  p <- plot(data_x, data_y)
-  curve <- NULL
+  plot(data_x, data_y, main = paste("Curve Fitting:", toupper(fitting)), pch = 16)
+  curve_obj <- NULL
   predict_func <- NULL
 
-  # the function must perform different
-  # operations depending on the type of fitting specified,
-  # but it mostly follows the same steps for each type
   if (fitting == "l") {
     # LINEAR
     model <- lm(data_y ~ data_x)
@@ -418,9 +427,9 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
     a <- coef(model)[1]
     b <- coef(model)[2]
 
-    curve <- curve(
+    curve_obj <- curve(
       (a + b * x),
-      from = min(data_x), to = max(data_x), col = "blue", add = TRUE
+      from = min(data_x), to = max(data_x), col = "blue", add = TRUE, lwd = 2
     )
 
     y_est <- a + b * data_x
@@ -435,9 +444,9 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
     a <- coef(model)[1]
     b <- coef(model)[2]
 
-    curve <- curve(
+    curve_obj <- curve(
       (a + b * log(x)),
-      from = min(data_x), to = max(data_x), col = "orange", add = TRUE
+      from = min(data_x), to = max(data_x), col = "orange", add = TRUE, lwd = 2
     )
 
     y_est <- a + b * log(data_x)
@@ -446,18 +455,37 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
       a + b * log(x_val)
     }
   } else if (fitting == "e") {
-    # EXPONENTIAL
+    # EXPONENTIAL (y = a * e^(bx))
+    lnY <- log(data_y)
+
+    model <- lm(lnY ~ data_x)
+
+    a <- exp(coef(model)[1])
+    b <- coef(model)[2]
+
+    curve_obj <- curve(
+      (a * exp(b * x)),
+      from = min(data_x), to = max(data_x), col = "green", add = TRUE, lwd = 2
+    )
+
+    y_est <- a * exp(b * data_x)
+    err <- err - y_est
+    predict_func <- function(x_val) {
+      a * exp(b * x_val)
+    }
+  } else if (fitting == "p") {
+    # POWER (y = a * x^b)
     lnX <- log(data_x)
     lnY <- log(data_y)
 
     model <- lm(lnY ~ lnX)
 
-    a <- exp(coef(model))[1]
+    a <- exp(coef(model)[1])
     b <- coef(model)[2]
 
-    curve <- curve(
+    curve_obj <- curve(
       (a * x^b),
-      from = min(data_x), to = max(data_x), col = "green", add = TRUE
+      from = min(data_x), to = max(data_x), col = "cyan", add = TRUE, lwd = 2
     )
 
     y_est <- a * data_x^b
@@ -466,15 +494,15 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
       a * x_val^b
     }
   } else if (fitting == "i") {
-    # Hyperbolic aka inverse
+    # HYPERBOLIC / INVERSE
     model <- lm(1 / data_y ~ data_x)
 
     a <- coef(model)[1]
     b <- coef(model)[2]
 
-    curve <- curve(
+    curve_obj <- curve(
       (1 / (a + b * x)),
-      from = min(data_x), to = max(data_x), col = "red", add = TRUE
+      from = min(data_x), to = max(data_x), col = "red", add = TRUE, lwd = 2
     )
 
     y_est <- 1 / (a + b * data_x)
@@ -488,13 +516,13 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
 
     model <- lm(data_y ~ data_x + data_x2)
 
-    a <- coef(model)[3]
-    b <- coef(model)[2]
     c <- coef(model)[1]
+    b <- coef(model)[2]
+    a <- coef(model)[3]
 
-    curve <- curve(
+    curve_obj <- curve(
       (a * (x^2) + (b * x) + c),
-      from = min(data_x), to = max(data_x), col = "black", add = TRUE
+      from = min(data_x), to = max(data_x), col = "black", add = TRUE, lwd = 2
     )
 
     y_est <- a * (data_x2) + (b * data_x) + c
@@ -503,28 +531,34 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
       a * (x_val^2) + (b * x_val) + c
     }
   } else if (fitting == "t") {
-    # TRIGONOMETRIC
-    model <- lm(data_y ~ 0 + sin(data_x) + cos(data_x))
+    # TRIGONOMETRIC (Added intercept 'c' for baseline shift)
+    model <- lm(data_y ~ sin(data_x) + cos(data_x))
 
-    a <- coef(model)[1]
-    b <- coef(model)[2]
+    c <- coef(model)[1]
+    a <- coef(model)[2]
+    b <- coef(model)[3]
 
-    curve <- curve(
-      (a * sin(x) + b * cos(x)),
-      from = min(data_x), to = max(data_x), col = "purple", add = TRUE
+    curve_obj <- curve(
+      (c + a * sin(x) + b * cos(x)),
+      from = min(data_x), to = max(data_x), col = "purple", add = TRUE, lwd = 2
     )
 
-    y_est <- a * sin(data_x) + b * cos(data_x)
+    y_est <- c + a * sin(data_x) + b * cos(data_x)
     err <- err - y_est
     predict_func <- function(x_val) {
-      a * sin(x_val) + b * cos(x_val)
+      c + a * sin(x_val) + b * cos(x_val)
     }
   }
 
-  # calculation of final variables
+  # 3. Save the Plot properly using recordPlot()
+  p <- recordPlot()
+
+  # Calculation of final variables
   mse <- mean(err^2)
   var_y <- var(data_y) * (n - 1) / n
-  r2 <- 1 - (mse / var_y)
+
+  # Prevent division by zero if all Y values are identical
+  r2 <- if (var_y == 0) NA else 1 - (mse / var_y)
 
   result <- list(
     "Model" = model,
@@ -532,8 +566,312 @@ pipsa_model_func <- function(data_x, data_y, fitting) {
     "VarianceY" = var_y,
     "R2" = r2,
     "Plot" = p,
-    "Curve" = curve,
+    "Curve" = curve_obj,
+    "Predict" = predict_func
+  )
+
+  result
+}
+#' Obtain spearman correlation
+#'
+#' Obtains spearman correlation from 2 vectors
+#' The cor.test function also accepts pearson and kendall
+#'
+#' @param x A vector for variable X
+#' @param y A vector for variable Y
+#' @return The Spearman correlation
+#' @examples
+#' pipsa_spearman_correlation(c(1, 2, 3), c(4, 5, 6))
+#' @export
+pipsa_spearman_correlation <- function(x, y) {
+  cor.test(x, y, method = "spearman")
+}
+
+#' Chi-Square Statistic
+#'
+#' Computes the Pearson Chi-Square statistic for a contingency table.
+#'
+#' @param tab A contingency table or matrix.
+#' @return The numeric Chi-square value.
+#' @examples
+#' data <- matrix(c(30, 20, 60, 40, 40, 10), nrow = 3, byrow = TRUE)
+#' pipsa_chi_square(data)
+#' @export
+pipsa_chi_square <- function(tab) {
+  test <- chisq.test(tab, correct = FALSE)
+  test$statistic
+}
+
+#' Pearson's Contingency Coefficient (C)
+#'
+#' Computes Pearson's Contingency Coefficient C for a contingency table.
+#'
+#' @param tbl A contingency table or matrix.
+#' @return The numeric coefficient C.
+#' @examples
+#' data <- matrix(c(30, 20, 60, 40, 40, 10), nrow = 3, byrow = TRUE)
+#' pipsa_contingency_coef(data)
+#' @export
+pipsa_contingency_coef <- function(tbl) {
+  chi2 <- pipsa_chi_square(tbl)
+  n <- sum(tbl)
+  sqrt(chi2 / (chi2 + n))
+}
+
+#' Plane Fitting & Evaluation
+#'
+#' Fits a multiple linear regression plane (z = a + bx + cy) to 3D spatial data
+#' and calculates the Model, Sum of Squared Errors (SSE), Residual Variance, and R^2.
+#'
+#' @param x Numeric vector for independent variable X.
+#' @param y Numeric vector for independent variable Y.
+#' @param z Numeric vector for dependent variable Z.
+#' @return A named list: Model, SSE, ResidualVariance, R2, Predict (function).
+#' @examples
+#' x <- c(0, 1, 0, -1, 0, 1, 1, 2)
+#' y <- c(0, 1, 1, 1, 3, 2, 2, 0)
+#' z <- c(2, 3, 4, 5, 7, 4, 5, 0)
+#' pipsa_plane_fit(x, y, z)
+#' @export
+pipsa_plane_fit <- function(x, y, z) {
+  n <- length(z)
+
+  model <- lm(z ~ x + y)
+
+  a <- coef(model)[1]
+  b <- coef(model)[2]
+  c <- coef(model)[3]
+
+  z_est <- a + (b * x) + (c * y)
+  err <- z - z_est
+
+  sse <- sum(err^2)
+  res_var <- sse / n
+  sst <- sum((z - mean(z))^2)
+  r2 <- 1 - (sse / sst)
+
+  predict_func <- function(x_val, y_val) {
+    unname(a + (b * x_val) + (c * y_val))
+  }
+
+  result <- list(
+    "Model" = model,
+    "SSE" = sse,
+    "ResidualVariance" = res_var,
+    "R2" = r2,
     "Predict" = predict_func
   )
   result
+}
+
+#' Compare Regression Models
+#'
+#' Fits all seven models, ranks them by highest R2 (then lowest MSE),
+#' and optionally predicts a value using the best fit.
+#'
+#' @param x Numeric vector for independent variable X.
+#' @param y Numeric vector for dependent variable Y.
+#' @return Returns the results table, the winning model and the models list.
+#' @export
+pipsa_compare_models <- function(x, y) {
+  keys <- c("l", "lo", "e", "p", "i", "q", "t")
+
+  results <- data.frame(Model = character(), R2 = numeric(), MSE = numeric())
+
+  models <- list()
+
+  for (k in keys) {
+    fit <- tryCatch(suppressWarnings(pipsa_model_func(x, y, fitting = k)),
+      error = function(e) NULL
+    )
+
+    if (!is.null(fit)) {
+      models[[k]] <- fit
+      results <- rbind(results, data.frame(Model = k, R2 = fit$R2, MSE = fit$mse))
+    }
+  }
+  results <- results[order(-results$R2, results$MSE), ]
+
+  cat("\n--- MODEL COMPARISON ---\n")
+  print(results, row.names = FALSE)
+  cat("------------------------\n")
+
+  best_key <- results$Model[1]
+  best_model <- models[[best_key]]
+
+  list(table = results, best_model = best_model, models = models)
+}
+
+#' Regression validity
+#'
+#' Check the validity of 2 regression slopes (Reference: Exercise 10)
+#'
+#' @param b_yx Slope of y on x
+#' @param b_xy Slope of x on y
+#' @return Whether the regression lines are valid
+#' @examples
+#' # Suppose you have r_{y/x} === y = 5 + 8x
+#' # and r_{x/y} === y = 3 -2x => x = 3/2 - y/2
+#' pipsa_is_regression_valid(8, -0.5)
+#' @export
+pipsa_is_regression_valid <- function(b_yx, b_xy) {
+  r2 <- b_xy * b_yx
+  (r2 > 0) && (r2 <= 1)
+}
+
+#' Theoretical Regression Parameters from Slopes
+#'
+#' Computes the linear correlation coefficient (r), covariance (s_xy),
+#' and population variance of Y (sigma_y^2) given the regression slopes
+#' b_yx and b_xy alongside the variance of X.
+#'
+#' @param b_yx Numeric slope of regression line Y on X.
+#' @param b_xy Numeric slope of regression line X on Y.
+#' @param var_x Numeric population variance of variable X.
+#' @return A named list containing `r` (correlation),
+#' `cov` (covariance), and `var_y` (variance of Y).
+#' @examples
+#' # Given slopes b_yx = 2/9, b_xy = 2, and var_x = 9
+#' pipsa_regression_from_slopes(2 / 9, 2, 9)
+#' @export
+pipsa_regression_from_slopes <- function(b_yx, b_xy, var_x) {
+  r <- sign(b_yx) * sqrt(b_yx * b_xy)
+  cov_xy <- b_yx * var_x
+  var_y <- cov_xy / b_xy
+
+  pipsa_print(r, "Correlation coefficient (r): ")
+  pipsa_print(cov_xy, "Covariance (s_xy): ")
+  pipsa_print(var_y, "Variance of Y (sigma_y^2): ")
+
+  list(r = r, cov = cov_xy, var_y = var_y)
+}
+
+#' Update Regression Lines by Removing a Point (Standard Form Input)
+#'
+#' Recalculates two regression lines after an erroneous point is removed.
+#' Inputs for the lines are given as a vector c(A, B, C) representing Ax + By = C.
+#'
+#' @param line_yx Numeric vector c(A, B, C) for the Y on X line (Ax + By = C).
+#' @param line_xy Numeric vector c(A, B, C) for the X on Y line (Ax + By = C).
+#' @param var_x Original population variance of X.
+#' @param n Original sample size.
+#' @param pt_x X-coordinate of the point to remove.
+#' @param pt_y Y-coordinate of the point to remove.
+#' @return A list with the updated equations, means, and variances.
+#' @export
+pipsa_update_regression_remove_point <- function(line_yx, line_xy, var_x, n, pt_x, pt_y) {
+  # 1. Convert c(A, B, C) back to intercepts and slopes
+  # line_yx: A*x + B*y = C  =>  y = (C/B) - (A/B)*x
+  a_yx <- line_yx[3] / line_yx[2]
+  b_yx <- -line_yx[1] / line_yx[2]
+
+  # line_xy: A*x + B*y = C  =>  x = (C/A) - (B/A)*y
+  a_xy <- line_xy[3] / line_xy[1]
+  b_xy <- -line_xy[2] / line_xy[1]
+
+  # 2. Find original means by intersecting the two regression lines
+  mean_x <- (a_xy + b_xy * a_yx) / (1 - b_yx * b_xy)
+  mean_y <- a_yx + b_yx * mean_x
+
+  # 3. Reconstruct Covariance and Variance of Y
+  cov_xy <- b_yx * var_x
+  var_y <- cov_xy / b_xy
+
+  # 4. Reconstruct the original raw uncentered sums
+  sum_x <- n * mean_x
+  sum_y <- n * mean_y
+  sum_x2 <- n * (var_x + mean_x^2)
+  sum_y2 <- n * (var_y + mean_y^2)
+  sum_xy <- n * (cov_xy + mean_x * mean_y)
+
+  # 5. Remove the erroneous point
+  n_new <- n - 1
+  sum_x_new <- sum_x - pt_x
+  sum_y_new <- sum_y - pt_y
+  sum_x2_new <- sum_x2 - (pt_x^2)
+  sum_y2_new <- sum_y2 - (pt_y^2)
+  sum_xy_new <- sum_xy - (pt_x * pt_y)
+
+  # 6. Calculate new means, variances, and covariance
+  mean_x_new <- sum_x_new / n_new
+  mean_y_new <- sum_y_new / n_new
+
+  var_x_new <- (sum_x2_new / n_new) - (mean_x_new^2)
+  var_y_new <- (sum_y2_new / n_new) - (mean_y_new^2)
+  cov_xy_new <- (sum_xy_new / n_new) - (mean_x_new * mean_y_new)
+
+  # 7. Build the new regression lines (slopes and intercepts)
+  b_yx_new <- cov_xy_new / var_x_new
+  a_yx_new <- mean_y_new - (b_yx_new * mean_x_new)
+
+  b_xy_new <- cov_xy_new / var_y_new
+  a_xy_new <- mean_x_new - (b_xy_new * mean_y_new)
+
+  # 8. Convert back to c(A, B, C) format for output
+  # y = a + bx  =>  -bx + 1y = a
+  new_vector_yx <- c(-b_yx_new, 1, a_yx_new)
+  # x = a + by  =>  1x - by = a
+  new_vector_xy <- c(1, -b_xy_new, a_xy_new)
+
+  # Return the results
+  list(
+    "New_Y_on_X_Vector" = new_vector_yx,
+    "New_X_on_Y_Vector" = new_vector_xy,
+    "New_Y_on_X_Coefs"  = c(Intercept = a_yx_new, Slope = b_yx_new),
+    "New_X_on_Y_Coefs"  = c(Intercept = a_xy_new, Slope = b_xy_new),
+    "New_Means"         = c(Mean_X = mean_x_new, Mean_Y = mean_y_new),
+    "New_Variances"     = c(Var_X = var_x_new, Var_Y = var_y_new, Cov_XY = cov_xy_new)
+  )
+}
+
+#' Identify and Sort Regression Lines
+#'
+#' Given two unlabelled regression lines in standard form (Ax + By = C),
+#' this function determines which is the Y on X line and which is the X on Y line
+#' by testing the property that r^2 = (b_yx * b_xy) must be <= 1.
+#'
+#' @param line1 Numeric vector c(A, B, C) for the first line.
+#' @param line2 Numeric vector c(A, B, C) for the second line.
+#' @return A list identifying the correct Y on X line, X on Y line, and the R2.
+#' @examples
+#' # line1: 2x - y = -1  |  line2: x - 3y = -2
+#' pipsa_identify_regression_lines(c(2, -1, -1), c(1, -3, -2))
+#' @export
+pipsa_identify_regression_lines <- function(line1, line2) {
+  # Test Case A: Assume Line 1 is Y on X, Line 2 is X on Y
+  # Line 1 (Y on X): y = (-A1/B1)*x + (C1/B1) --> Slope = -A1/B1
+  b_yx_A <- -line1[1] / line1[2]
+  # Line 2 (X on Y): x = (-B2/A2)*y + (C2/A2) --> Slope = -B2/A2
+  b_xy_A <- -line2[2] / line2[1]
+
+  r2_A <- b_yx_A * b_xy_A
+
+  # If r2 is valid, Case A is correct
+  if (r2_A >= 0 && r2_A <= 1) {
+    return(list(
+      "Y_on_X_Vector" = line1,
+      "X_on_Y_Vector" = line2,
+      "R2" = r2_A,
+      "Message" = "Line 1 is Y on X. Line 2 is X on Y."
+    ))
+  }
+
+  # Test Case B: Assume Line 2 is Y on X, Line 1 is X on Y
+  b_yx_B <- -line2[1] / line2[2]
+  b_xy_B <- -line1[2] / line1[1]
+
+  r2_B <- b_yx_B * b_xy_B
+
+  # If r2 is valid, Case B is correct
+  if (r2_B >= 0 && r2_B <= 1) {
+    return(list(
+      "Y_on_X_Vector" = line2,
+      "X_on_Y_Vector" = line1,
+      "R2" = r2_B,
+      "Message" = "Line 2 is Y on X. Line 1 is X on Y."
+    ))
+  }
+
+  # If both fail, the problem data itself is mathematically invalid
+  stop("Invalid lines. Neither configuration produces an r^2 between 0 and 1.")
 }

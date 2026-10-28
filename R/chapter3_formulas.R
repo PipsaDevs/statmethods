@@ -32,7 +32,8 @@ pipsa_print <- function(x, string = "", round = 5, reverse = FALSE) {
 #' in the form "intercept + slope * x".
 #'
 #' @param model A model (obtained from lm())
-#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @param y_on_x A boolean to determine whether
+#' the model is y on x or x on y. Default: TRUE (meaning it's y on x)
 #' @return A string representation of the linear function.
 #' @examples
 #' pipsa_obtain_function_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
@@ -62,7 +63,8 @@ pipsa_obtain_function_from_model <- function(model, y_on_x = TRUE) {
 #' in the form "intercept + slope * x".
 #'
 #' @param model A model (obtained from lm())
-#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @param y_on_x A boolean to determine whether
+#' the model is y on x or x on y. Default: TRUE (meaning it's y on x)
 #' @return A string representation of the linear function.
 #' @examples
 #' pipsa_regression_line_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)))
@@ -78,19 +80,25 @@ pipsa_regression_line_from_model <- function(model, y_on_x = TRUE) {
 #'
 #' @param model A model (obtained from lm())
 #' @param col The color of the line. Default: "red"
-#' @param lineWidth The width of the line. Default: 2
-#' @param y_on_x A boolean to determine whether the model is y on x or x on y. Default: TRUE (meaning it's y on x)
+#' @param line_width The width of the line. Default: 2
+#' @param y_on_x A boolean to determine whether
+#' the model is y on x or x on y. Default: TRUE (meaning it's y on x)
 #' @return The representation of the function in a plot
 #' @examples
 #' pipsa_plot_from_model(lm(c(1, 2, 3) ~ c(4, 5, 6)), "red", 2)
 #' @export
-pipsa_plot_from_model <- function(model, col = "red", lineWidth = 2, y_on_x = TRUE) {
+pipsa_plot_from_model <- function(
+  model,
+  col = "red",
+  line_width = 2,
+  y_on_x = TRUE
+) {
   coef <- coef(model)
 
   if (y_on_x == TRUE) {
-    abline(a = coef[1], b = coef[2], col = col, lwd = lineWidth)
+    abline(a = coef[1], b = coef[2], col = col, lwd = line_width)
   } else {
-    abline(a = -coef[1] / coef[2], b = 1 / coef[2], col = col, lwd = lineWidth)
+    abline(a = -coef[1] / coef[2], b = 1 / coef[2], col = col, lwd = line_width)
   }
 }
 
@@ -217,7 +225,8 @@ pipsa_time_series <- function(data_array, initial_year, freq) {
     trend = trend,
     seasonal_indices = seasonal_indices,
     deseasonalized_data = deseasonalized_data,
-    trend_model = trend_model
+    trend_model = trend_model,
+    random_component = random_component
   )
 }
 #' auto_correlation for a Specific Lag
@@ -287,6 +296,10 @@ pipsa_calculate_correl <- function(data) {
 #' Consumer Price Index values (base year = 100).
 #' @return A data frame containing
 #' Nominal Values, CPI, Real Values, and Purchasing Power factor.
+#' @examples
+#' nominal_values <- c(100, 150) # Grows by 50% (100 -> 150)
+#' cpi_index <- c(100, 200) # CPI doubles (100 -> 200)
+#' pipsa_calculate_deflation(nominal_values, cpi_index)
 #' @export
 pipsa_calculate_deflation <- function(nominal_values, cpi_index) {
   if (length(nominal_values) != length(cpi_index)) {
