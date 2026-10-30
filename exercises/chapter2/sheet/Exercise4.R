@@ -1,36 +1,31 @@
-# A study is being conducted on the impact of fatigue in a workplace on performance. For 10
-# workers, the number of consecutive hours worked and the number of errors made have been
-# recorded, as shown in the following table:
-# Horas = x   | 2 2 3 3 4 4 5 6 7 7
-# Errores = y | 0 1 1 1 3 3 6 7 8 7
-
-x <- c(2, 2, 3, 3, 4, 4, 5, 6, 7, 7)
-y <- c(0, 1, 1, 1, 3, 3, 6, 7, 8, 7)
-
-# (a) Plot its scatter diagram and observe that, apparently, there is a good linear correlation.
-
 source("R/chapter2_formulas.R")
+source("R/chapter1_formulas.R")
+# First, lets set up the data
+x <- 0:1
+y <- c(1, 3, 5)
+tbl <- pipsa_table_from_vector(c(3, 7, 6, 14, 9, 21), nrows = 3)
+# We use this so that x is associated to columns and y to rows
+dimnames(tbl) <- list(y = y, x = x)
 
-res_y_on_x <- pipsa_model_func(x, y, "l") # there is good linear correlation! omg! so cute! so kawaii!
+obs <- pipsa_table_to_vectors(tbl)
 
-# (b) Calculate the coefficient of that linear correlation
+dothings <- function(a) {
+  c(
+    mean(a),
+    median(a),
+    pipsa_stat_mode(a)
+  )
+}
 
-pipsa_print(pipsa_linear_correlation(x, y), "Correlation: ") # Sol.: r = 0.972
+print(dothings(obs$x))
 
-# (c) Calculate the regression line of the errors on working hours.
+# Ok so we use x here because condition_var understands x as row value
+cond <- pipsa_cond_dist_gen(tbl,
+  condition_var = "x",
+  value = 1,
+  returnMean = TRUE
+)
 
-pipsa_regression_line_from_model(res_y_on_x$Model) # Sol.: y = 1.55 x − 2.98
-
-# (d) The regression line of working hours on errors.
-
-res_x_on_y <- pipsa_model_func(y, x, "l")
-
-pipsa_regression_line_from_model(res_x_on_y$Model, FALSE) # Sol.: x = 0.61 y + 2.05
-
-# (e) Draw both regression lines and check that they intersect at the point where the means of both variables coincide.
-
-p <- plot(x, y)
-curve(res_x_on_y$Model)
-
-# (f) How many errors can we expect from a worker who works 10 consecutive hours?
-# (g) How many consecutive working hours can we expect a worker who makes 13 errors to have worked?
+cond_vec <- rep(as.numeric(cond$table$y), times = cond$table$absolute)
+print(dothings(cond_vec))
+print(pipsa_is_independent(obs$x, obs$y))
