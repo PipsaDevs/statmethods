@@ -13,3 +13,11 @@ dpois(5, 4)
 dpois(1, 4) + dpois(0, 4)
 
 1 - dpois(1, 4) - dpois(0, 4)
+
+# OTHER WAY TO SOLVE IT
+
+dpois(5, 4)
+
+ppois(1, 4)
+
+1 - ppois(1, 4)
