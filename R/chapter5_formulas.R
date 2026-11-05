@@ -60,3 +60,25 @@ pipsa_discrete_popstats <- function(dat) {
     std_dev = abs(sqrt(f2))
   )
 }
+
+# CONTINUOUS FORMULAS ONLY
+
+# Note:
+# To define functions, just use the standard definition
+# of functions in R:
+# f <- function(x) x^3 + 2x
+
+#' Density function
+#'
+#' Given a function f, return the probability that the variable
+#' takes a value within the interval specified
+#'
+#' @param f A continuous function
+#' @param a Lower limit
+#' @param b Upper limit
+#' @return The value of the integral from a to b of f
+#' @export
+
+pipsa_density_fn <- function(f, a, b) {
+  integrate(f, a, b)$value
+}
