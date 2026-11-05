@@ -22,7 +22,8 @@ pipsa_gen_prob_dist <- function(x, p) {
 #' @examples
 #' x <- 0:2
 #' p <- c(1, 2, 1) / 4
-#' F <- pipsa
+#' F <- pipsa_dist_fn_gen(pipsa_gen_prob_dist(x, p))
+#' F(1) # 0.75
 #' @export
 pipsa_dist_fn_gen <- function(dat) {
   cump <- c(0, cumsum(dat$p))
