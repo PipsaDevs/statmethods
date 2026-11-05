@@ -11,3 +11,22 @@ pipsa_gen_prob_dist <- function(x, p) {
     p = p[ord]
   )
 }
+
+#' Distribution function generator
+#'
+#' Generates, starting from the vector of points and their
+#' probabilities, a function F(x_i) = P(X \leq x_i)
+#'
+#' @param dat The data frame containing the variables x and p
+#' @return The function F(x_i) defined above
+#' @examples
+#' x <- 0:2
+#' p <- c(1, 2, 1) / 4
+#' F <- pipsa
+#' @export
+pipsa_dist_fn_gen <- function(dat) {
+  cump <- c(0, cumsum(dat$p))
+  function(q) {
+    cump[findInterval(q, dat$x) + 1]
+  }
+}
