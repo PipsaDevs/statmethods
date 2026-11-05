@@ -1,3 +1,5 @@
+# DISCRETE FORMULAS ONLY
+
 #' Generate probability distribution map
 #'
 #' @param x A vector of points x_i marked as references
@@ -12,7 +14,7 @@ pipsa_gen_prob_dist <- function(x, p) {
   )
 }
 
-#' Distribution function generator
+#' Discrete distribution function generator
 #'
 #' Generates, starting from the vector of points and their
 #' probabilities, a function F(x_i) = P(X \leq x_i)
@@ -22,17 +24,17 @@ pipsa_gen_prob_dist <- function(x, p) {
 #' @examples
 #' x <- 0:2
 #' p <- c(1, 2, 1) / 4
-#' F <- pipsa_dist_fn_gen(pipsa_gen_prob_dist(x, p))
+#' F <- pipsa_discrete_dist_fn_gen(pipsa_gen_prob_dist(x, p))
 #' F(1) # 0.75
 #' @export
-pipsa_dist_fn_gen <- function(dat) {
+pipsa_discrete_dist_fn_gen <- function(dat) {
   cump <- c(0, cumsum(dat$p))
   function(q) {
     cump[findInterval(q, dat$x) + 1]
   }
 }
 
-#' Population statistics
+#' Discrete population statistics
 #'
 #' Given a probability distribution map, generates a frame
 #' with the population statistics values
@@ -45,11 +47,11 @@ pipsa_dist_fn_gen <- function(dat) {
 #' @examples
 #' x <- 0:2
 #' p <- c(1, 2, 1) / 4
-#' popstats <- pipsa_popstats(pipsa_gen_prob_dist(x, p))
+#' popstats <- pipsa_discrete_popstats(pipsa_gen_prob_dist(x, p))
 #' popstats$expectedval # 1
 #' popstats$variance # 0.5
 #' @export
-pipsa_popstats <- function(dat) {
+pipsa_discrete_popstats <- function(dat) {
   f1 <- sum(dat$p * dat$x)
   f2 <- sum(dat$p * ((dat$x)^2)) - (f1^2)
   data.frame(
