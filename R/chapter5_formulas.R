@@ -5,8 +5,9 @@
 #' @return A data frame containing the variables
 #' @export
 pipsa_gen_prob_dist <- function(x, p) {
+  ord <- order(x)
   data.frame(
-    x = x,
-    p = p
+    x = x[ord],
+    p = p[ord]
   )
 }
