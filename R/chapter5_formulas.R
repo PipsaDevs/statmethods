@@ -79,6 +79,6 @@ pipsa_discrete_popstats <- function(dat) {
 #' @return The value of the integral from a to b of f
 #' @export
 
-pipsa_density_fn <- function(f, a, b) {
+pipsa_continuous_density_fn <- function(f, a, b) {
   integrate(f, a, b)$value
 }
