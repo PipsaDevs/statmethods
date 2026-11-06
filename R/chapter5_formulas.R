@@ -82,3 +82,35 @@ pipsa_discrete_popstats <- function(dat) {
 pipsa_continuous_density_fn <- function(f, a, b) {
   integrate(f, a, b)$value
 }
+
+#' Continuous population statistics
+#'
+#' Given a probability function, generates a frame
+#' with the population statistics values
+#'
+#' @param f The continuous probability function
+#' @return A data frame containing the following values:
+#' Mean AKA expected variance
+#' Variance
+#' Standard deviation
+#' @examples
+#'
+#' popstats <- pipsa_continuous_popstats(function(x) {
+#'   x^2
+#' })
+#' popstats$expectedval
+#' popstats$variance
+#' @export
+
+pipsa_continuous_popstats <- function(f) {
+  f1 <- function(x) x * f(x)
+  f2 <- function(x) (x^2) * f(x)
+  r1 <- integrate(f1, -Inf, Inf)$value
+  r2 <- integrate(f2, -Inf, Inf) - (r1^2)
+
+  data.frame(
+    expectedval = r1,
+    variance = r2,
+    std_dev = abs(sqrt(r2))
+  )
+}
