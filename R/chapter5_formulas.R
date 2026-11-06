@@ -1,3 +1,5 @@
+# DISCRETE FORMULAS ONLY
+
 #' Generate probability distribution map
 #'
 #' @param x A vector of points x_i marked as references
@@ -12,7 +14,7 @@ pipsa_gen_prob_dist <- function(x, p) {
   )
 }
 
-#' Distribution function generator
+#' Discrete distribution function generator
 #'
 #' Generates, starting from the vector of points and their
 #' probabilities, a function F(x_i) = P(X \leq x_i)
@@ -22,17 +24,17 @@ pipsa_gen_prob_dist <- function(x, p) {
 #' @examples
 #' x <- 0:2
 #' p <- c(1, 2, 1) / 4
-#' F <- pipsa_dist_fn_gen(pipsa_gen_prob_dist(x, p))
+#' F <- pipsa_discrete_dist_fn_gen(pipsa_gen_prob_dist(x, p))
 #' F(1) # 0.75
 #' @export
-pipsa_dist_fn_gen <- function(dat) {
+pipsa_discrete_dist_fn_gen <- function(dat) {
   cump <- c(0, cumsum(dat$p))
   function(q) {
     cump[findInterval(q, dat$x) + 1]
   }
 }
 
-#' Population statistics
+#' Discrete population statistics
 #'
 #' Given a probability distribution map, generates a frame
 #' with the population statistics values
@@ -45,16 +47,76 @@ pipsa_dist_fn_gen <- function(dat) {
 #' @examples
 #' x <- 0:2
 #' p <- c(1, 2, 1) / 4
-#' popstats <- pipsa_popstats(pipsa_gen_prob_dist(x, p))
+#' popstats <- pipsa_discrete_popstats(pipsa_gen_prob_dist(x, p))
 #' popstats$expectedval # 1
 #' popstats$variance # 0.5
 #' @export
-pipsa_popstats <- function(dat) {
+pipsa_discrete_popstats <- function(dat) {
   f1 <- sum(dat$p * dat$x)
   f2 <- sum(dat$p * ((dat$x)^2)) - (f1^2)
   data.frame(
     expectedval = f1,
     variance = f2,
     std_dev = abs(sqrt(f2))
+  )
+}
+
+# CONTINUOUS FORMULAS ONLY
+
+# Note:
+# To define functions, just use the standard definition
+# of functions in R:
+# f <- function(x) x^3 + 2x
+
+#' Density function
+#'
+#' Given a function f, return the probability that the variable
+#' takes a value within the interval specified
+#'
+#' @param f A continuous function
+#' @param a Lower limit
+#' @param b Upper limit
+#' @return The value of the integral from a to b of f
+#' @export
+
+pipsa_continuous_density_fn <- function(f, a, b) {
+  f_vec <- Vectorize(f)
+  integrate(f_vec, a, b)$value
+}
+
+#' Continuous population statistics
+#'
+#' Given a probability function, generates a frame
+#' with the population statistics values
+#'
+#' @param f The continuous probability function
+#' @param a Lower limit of support (default is -Inf)
+#' @param b Upper limit of support (default is Inf)
+#' @return A data frame containing the following values:
+#' Mean AKA expected variance
+#' Variance
+#' Standard deviation
+#' @examples
+#'
+#' f <- function(x) ifelse(x >= 0 & x <= 2, x / 2, 0)
+#' popstats <- pipsa_continuous_popstats(f)
+#' popstats$expectedval
+#' popstats$variance
+#'
+#' # Alternatively, pass limits directly:
+#' popstats2 <- pipsa_continuous_popstats(function(x) x / 2, a = 0, b = 2)
+#' @export
+
+pipsa_continuous_popstats <- function(f, a = -Inf, b = Inf) {
+  f_vec <- Vectorize(f)
+  f1 <- function(x) x * f_vec(x)
+  f2 <- function(x) (x^2) * f_vec(x)
+  r1 <- integrate(f1, a, b)$value
+  r2 <- integrate(f2, a, b)$value - (r1^2)
+
+  data.frame(
+    expectedval = r1,
+    variance = r2,
+    std_dev = abs(sqrt(r2))
   )
 }
