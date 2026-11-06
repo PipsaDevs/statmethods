@@ -80,7 +80,8 @@ pipsa_discrete_popstats <- function(dat) {
 #' @export
 
 pipsa_continuous_density_fn <- function(f, a, b) {
-  integrate(f, a, b)$value
+  f_vec <- Vectorize(f)
+  integrate(f_vec, a, b)$value
 }
 
 #' Continuous population statistics
