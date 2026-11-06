@@ -90,24 +90,29 @@ pipsa_continuous_density_fn <- function(f, a, b) {
 #' with the population statistics values
 #'
 #' @param f The continuous probability function
+#' @param a Lower limit of support (default is -Inf)
+#' @param b Upper limit of support (default is Inf)
 #' @return A data frame containing the following values:
 #' Mean AKA expected variance
 #' Variance
 #' Standard deviation
 #' @examples
 #'
-#' popstats <- pipsa_continuous_popstats(function(x) {
-#'   x^2
-#' })
+#' f <- function(x) ifelse(x >= 0 & x <= 2, x / 2, 0)
+#' popstats <- pipsa_continuous_popstats(f)
 #' popstats$expectedval
 #' popstats$variance
+#'
+#' # Alternatively, pass limits directly:
+#' popstats2 <- pipsa_continuous_popstats(function(x) x / 2, a = 0, b = 2)
 #' @export
 
-pipsa_continuous_popstats <- function(f) {
-  f1 <- function(x) x * f(x)
-  f2 <- function(x) (x^2) * f(x)
-  r1 <- integrate(f1, -Inf, Inf)$value
-  r2 <- integrate(f2, -Inf, Inf) - (r1^2)
+pipsa_continuous_popstats <- function(f, a = -Inf, b = Inf) {
+  f_vec <- Vectorize(f)
+  f1 <- function(x) x * f_vec(x)
+  f2 <- function(x) (x^2) * f_vec(x)
+  r1 <- integrate(f1, a, b)$value
+  r2 <- integrate(f2, a, b)$value - (r1^2)
 
   data.frame(
     expectedval = r1,
