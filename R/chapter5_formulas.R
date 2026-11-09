@@ -120,3 +120,44 @@ pipsa_continuous_popstats <- function(f, a = -Inf, b = Inf) {
     std_dev = abs(sqrt(r2))
   )
 }
+
+#' Bounded probability solver
+#'
+#' Solve for t in any of the following cases:
+#' P(t <= X <= u) = v
+#' P(u <= X <= t) = v
+#'
+#' @param f The probability function
+#' @param bound The given bound, either the lower or upper one (u)
+#' @param res The result of the probability function (v)
+#' @param is_upper Whether the unknown variable (t) is the upper or lower bound
+#' @return The unknown's value (t)
+#' @examples
+#'
+#' f <- function(x) {
+#'   if (x < 0) {
+#'     0
+#'   } else if (x <= 2) {
+#'     0.2 * x
+#'   } else if (x <= 3) {
+#'     0.4 * (1 - x)
+#'   } else {
+#'     0
+#'   }
+#' }
+#' res <- pipsa_continuous_solve_bound(f, 0.75, 0.5, is_upper = TRUE)
+#' print(res)
+#' @export
+pipsa_continuous_solve_bound <- function(f, bound, res, is_upper = TRUE) {
+  f_vec <- Vectorize(f)
+  g <- function(x) {
+    val <- if (is_upper) {
+      integrate(f_vec, lower = bound, upper = x)$value
+    } else {
+      integrate(f_vec, lower = x, upper = bound)$value
+    }
+    val - res
+  }
+  sol <- uniroot(g, interval = c(0, 1), extendInt = "yes")
+  sol$root
+}
