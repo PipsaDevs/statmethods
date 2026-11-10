@@ -269,11 +269,11 @@ pipsa_pmf_geometric <- function(p, max_k = NULL) {
     if (max_k > 1e6) {
       stop("automatic truncation needs more than 1e6 points; supply 'max_k'")
     }
-  } else if (!is.numeric(max_k)
-  ||length(max_k) != 1 ç
-  ||is.na(max_k)
-  ||max_k < 1
-  ||max_k != round(max_k)
+  } else if (!is.numeric(max_k) ||
+    length(max_k) != 1 ||
+    is.na(max_k) ||
+    max_k < 1 ||
+    max_k != round(max_k)
   ) {
     stop("'max_k' must be a single positive integer")
   }
