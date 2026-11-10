@@ -95,12 +95,12 @@ pipsa_discrete_popstats <- function(dat) {
   if (abs(sum(dat$p) - 1) > 1e-6) {
     warning("the probabilities in 'dat' do not add up to 1")
   }
-  
+
   tol <- 1e-9
   dat <- dat[order(dat$x), ]
   n <- nrow(dat)
   cump <- cumsum(dat$p)
-  
+
   # Expected value, variance and central moments
   f1 <- sum(dat$x * dat$p)
   dev <- dat$x - f1
@@ -108,17 +108,17 @@ pipsa_discrete_popstats <- function(dat) {
   sd_val <- sqrt(f2)
   m3 <- sum(dev^3 * dat$p)
   m4 <- sum(dev^4 * dat$p)
-  
+
   # Coefficient of variation (mean is zero relative to the support scale)
   cv_val <- if (abs(f1) <= tol * max(abs(dat$x))) NA_real_ else sd_val / abs(f1)
-  
+
   # Quantiles: first x with accumulated F(x) >= prob
   first_ge <- function(prob) which(cump >= prob - tol)[1]
   quant <- function(prob) {
     i <- first_ge(prob)
     if (is.na(i)) NA_real_ else dat$x[i]
   }
-  
+
   # Median: mid-point average when F(x) is exactly 0.5
   i_med <- first_ge(0.5)
   if (is.na(i_med)) {
@@ -129,15 +129,15 @@ pipsa_discrete_popstats <- function(dat) {
   } else {
     med_val <- dat$x[i_med]
   }
-  
+
   # Mode: all x sharing the maximum probability
   p_max <- max(dat$p)
   modes <- dat$x[dat$p >= p_max * (1 - tol)]
   mode_val <- if (length(modes) == 1) modes else paste(modes, collapse = ", ")
-  
+
   q1_val <- quant(0.25)
   q3_val <- quant(0.75)
-  
+
   data.frame(
     expectedval = f1,
     variance = f2,
@@ -269,8 +269,12 @@ pipsa_pmf_geometric <- function(p, max_k = NULL) {
     if (max_k > 1e6) {
       stop("automatic truncation needs more than 1e6 points; supply 'max_k'")
     }
-  } else if (!is.numeric(max_k) || length(max_k) != 1 || is.na(max_k) ||
-             max_k < 1 || max_k != round(max_k)) {
+  } else if (!is.numeric(max_k)
+  ||length(max_k) != 1 ç
+  ||is.na(max_k)
+  ||max_k < 1
+  ||max_k != round(max_k)
+  ) {
     stop("'max_k' must be a single positive integer")
   }
   x <- seq_len(max_k)
@@ -302,7 +306,7 @@ pipsa_pmf_geometric <- function(p, max_k = NULL) {
 #' @export
 pipsa_pmf_poisson <- function(lambda, max_k = NULL) {
   if (!is.numeric(lambda) || length(lambda) != 1 || is.na(lambda) ||
-      !is.finite(lambda) || lambda <= 0) {
+    !is.finite(lambda) || lambda <= 0) {
     stop("'lambda' must be a single positive number")
   }
   if (is.null(max_k)) {
@@ -313,7 +317,7 @@ pipsa_pmf_poisson <- function(lambda, max_k = NULL) {
       stop("automatic truncation needs more than 1e6 points; supply 'max_k'")
     }
   } else if (!is.numeric(max_k) || length(max_k) != 1 || is.na(max_k) ||
-             max_k < 0 || max_k != round(max_k)) {
+    max_k < 0 || max_k != round(max_k)) {
     stop("'max_k' must be a single non-negative integer")
   }
   x <- 0:max_k
@@ -374,54 +378,54 @@ pipsa_discrete_distribution <- function(type, ...) {
     c("uniform", "bernoulli", "binomial", "geometric", "poisson")
   )
   pmf_fn <- switch(type,
-                   uniform = pipsa_pmf_uniform,
-                   bernoulli = pipsa_pmf_bernoulli,
-                   binomial = pipsa_pmf_binomial,
-                   geometric = pipsa_pmf_geometric,
-                   poisson = pipsa_pmf_poisson
+    uniform = pipsa_pmf_uniform,
+    bernoulli = pipsa_pmf_bernoulli,
+    binomial = pipsa_pmf_binomial,
+    geometric = pipsa_pmf_geometric,
+    poisson = pipsa_pmf_poisson
   )
   pmf <- pmf_fn(...)
-  
+
   # Parameters matched by name to the formals of the pmf function,
   # so that positional arguments are also supported
   prm <- as.list(match.call(
     pmf_fn,
     as.call(c(list(as.name("pmf_fn")), list(...)))
   ))[-1]
-  
+
   theoretical <- switch(type,
-                        uniform = {
-                          if (is.null(prm$b)) {
-                            list(
-                              expectedval = mean(prm$a),
-                              variance = mean((prm$a - mean(prm$a))^2)
-                            )
-                          } else {
-                            k <- prm$b - prm$a + 1
-                            list(
-                              expectedval = (prm$a + prm$b) / 2,
-                              variance = (k^2 - 1) / 12
-                            )
-                          }
-                        },
-                        bernoulli = list(
-                          expectedval = prm$p,
-                          variance = prm$p * (1 - prm$p)
-                        ),
-                        binomial = list(
-                          expectedval = prm$n * prm$p,
-                          variance = prm$n * prm$p * (1 - prm$p)
-                        ),
-                        geometric = list(
-                          expectedval = 1 / prm$p,
-                          variance = (1 - prm$p) / prm$p^2
-                        ),
-                        poisson = list(
-                          expectedval = prm$lambda,
-                          variance = prm$lambda
-                        )
+    uniform = {
+      if (is.null(prm$b)) {
+        list(
+          expectedval = mean(prm$a),
+          variance = mean((prm$a - mean(prm$a))^2)
+        )
+      } else {
+        k <- prm$b - prm$a + 1
+        list(
+          expectedval = (prm$a + prm$b) / 2,
+          variance = (k^2 - 1) / 12
+        )
+      }
+    },
+    bernoulli = list(
+      expectedval = prm$p,
+      variance = prm$p * (1 - prm$p)
+    ),
+    binomial = list(
+      expectedval = prm$n * prm$p,
+      variance = prm$n * prm$p * (1 - prm$p)
+    ),
+    geometric = list(
+      expectedval = 1 / prm$p,
+      variance = (1 - prm$p) / prm$p^2
+    ),
+    poisson = list(
+      expectedval = prm$lambda,
+      variance = prm$lambda
+    )
   )
-  
+
   list(
     type = type,
     pmf = pmf,
@@ -483,7 +487,7 @@ pipsa_continuous_popstats <- function(f, a = -Inf, b = Inf) {
   f2 <- function(x) (x^2) * f_vec(x)
   r1 <- integrate(f1, a, b)$value
   r2 <- integrate(f2, a, b)$value - (r1^2)
-  
+
   data.frame(
     expectedval = r1,
     variance = r2,
