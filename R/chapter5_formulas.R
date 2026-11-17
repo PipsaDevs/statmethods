@@ -316,8 +316,13 @@ pipsa_pmf_poisson <- function(lambda, max_k = NULL) {
     if (max_k > 1e6) {
       stop("automatic truncation needs more than 1e6 points; supply 'max_k'")
     }
-  } else if (!is.numeric(max_k) || length(max_k) != 1 || is.na(max_k) ||
-    max_k < 0 || max_k != round(max_k)) {
+  } else if (
+    is.numeric(max_k) ||
+      length(max_k) != 1 ||
+      is.na(max_k) ||
+      max_k < 0 ||
+      max_k != round(max_k)
+  ) {
     stop("'max_k' must be a single non-negative integer")
   }
   x <- 0:max_k
