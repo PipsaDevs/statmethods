@@ -8,6 +8,12 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-pendrive:
@@ -41,3 +47,28 @@ jobs:
           path: pendrive_ready
           if-no-files-found: error
           retention-days: 30
+
+      - name: Prepare GitHub Pages site
+        run: |
+          mkdir -p _site
+          cp pendrive_ready/documentation.html _site/index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy-pages:
+    name: Deploy Documentation to GitHub Pages
+    needs: build-pendrive
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
