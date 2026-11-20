@@ -1,5 +1,6 @@
-source("R/chapter5_formulas.R")
+# EXAMPLE FROM THE BOARD
 
+# degrees of freedom
 df <- 15
 
 probability <- pt(2.95, df) - pt(-2.95, df)
